@@ -1,12 +1,12 @@
 # Configuration
 
-All configuration lives in a `.env` file in your project root. Run `wp-sync init` to create one from the template.
+All configuration lives in a `.env` file in your project root. Run `wp-dev-sync init` to create one from the template.
 
 ## Full reference
 
 ```bash
 # =============================================================================
-# WP Sync — Configuration
+# WP Dev Sync — Configuration
 # =============================================================================
 
 # ── Paths ────────────────────────────────────────────────────
@@ -54,7 +54,7 @@ LOCAL_PATH=./wp-content/themes/my-theme
 LOCAL_PATH=/c/projects/mysite/wp-content/themes/my-theme
 ```
 
-WP Sync resolves relative paths to absolute at runtime. If the path doesn't exist, the CLI exits with an error.
+WP Dev Sync resolves relative paths to absolute at runtime. If the path doesn't exist, the CLI exits with an error.
 
 ### REMOTE_PATH
 
@@ -161,5 +161,5 @@ cp .env .env.production
 
 # Use one
 cp .env.staging .env
-wp-sync push
+wp-dev-sync push
 ```

@@ -1,25 +1,25 @@
 # Commands
 
-## wp-sync init
+## wp-dev-sync init
 
 Creates a `.env` file in the current directory from the built-in template.
 
 ```bash
-wp-sync init
+wp-dev-sync init
 ```
 
 If a `.env` file already exists, it warns you and exits without overwriting.
 
-**Use this as the first step** when setting up WP Sync in a new project.
+**Use this as the first step** when setting up WP Dev Sync in a new project.
 
 ---
 
-## wp-sync setup
+## wp-dev-sync setup
 
 Runs a comprehensive preflight check to verify your environment is ready.
 
 ```bash
-wp-sync setup
+wp-dev-sync setup
 ```
 
 **What it checks:**
@@ -33,12 +33,12 @@ Run this after configuring your `.env` to make sure everything works before sync
 
 ---
 
-## wp-sync watch
+## wp-dev-sync watch
 
 Starts a file watcher that automatically syncs changes to the remote server.
 
 ```bash
-wp-sync watch
+wp-dev-sync watch
 ```
 
 **What it does:**
@@ -60,12 +60,12 @@ The watcher selection is automatic based on your OS:
 
 ---
 
-## wp-sync push
+## wp-dev-sync push
 
 One-time upload of all files from `LOCAL_PATH` to `REMOTE_PATH`.
 
 ```bash
-wp-sync push
+wp-dev-sync push
 ```
 
 **Displays:**
@@ -81,12 +81,12 @@ wp-sync push
 
 ---
 
-## wp-sync pull
+## wp-dev-sync pull
 
 One-time download of all files from `REMOTE_PATH` to `LOCAL_PATH`.
 
 ```bash
-wp-sync pull
+wp-dev-sync pull
 ```
 
 **Use cases:**
@@ -98,12 +98,12 @@ wp-sync pull
 
 ---
 
-## wp-sync tunnel
+## wp-dev-sync tunnel
 
 Opens a public tunnel to your remote site for previewing.
 
 ```bash
-wp-sync tunnel
+wp-dev-sync tunnel
 ```
 
 Requires `TUNNEL_TOOL` and `TUNNEL_DOMAIN` in `.env`.
@@ -116,26 +116,26 @@ Requires `TUNNEL_TOOL` and `TUNNEL_DOMAIN` in `.env`.
 
 ---
 
-## wp-sync help
+## wp-dev-sync help
 
 Shows all available commands and quick start guide.
 
 ```bash
-wp-sync help
-wp-sync --help
-wp-sync -h
+wp-dev-sync help
+wp-dev-sync --help
+wp-dev-sync -h
 ```
 
 ---
 
-## wp-sync version
+## wp-dev-sync version
 
 Shows the current version.
 
 ```bash
-wp-sync version
-wp-sync --version
-wp-sync -v
+wp-dev-sync version
+wp-dev-sync --version
+wp-dev-sync -v
 ```
 
 ---

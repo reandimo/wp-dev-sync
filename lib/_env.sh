@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Shared environment for wp-sync.
+# Shared environment for wp-dev-sync.
 # Safely loads .env (handles passwords with special chars) and extends
 # PATH on Windows so tools installed via Chocolatey/Scoop are found.
 # @author Renan Diaz <https://reandimo.dev>

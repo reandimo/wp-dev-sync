@@ -1,6 +1,6 @@
-# WP Sync — Wiki
+# WP Dev Sync — Wiki
 
-Welcome to the WP Sync documentation. WP Sync is a CLI tool that syncs your local WordPress theme files to a remote server automatically — bringing the same developer experience that Shopify offers with `shopify theme dev` to the WordPress ecosystem.
+Welcome to the WP Dev Sync documentation. WP Dev Sync is a CLI tool that syncs your local WordPress theme files to a remote server automatically — bringing the same developer experience that Shopify offers with `shopify theme dev` to the WordPress ecosystem.
 
 ## What it does
 
@@ -18,7 +18,7 @@ Developing WordPress themes on remote servers typically means:
 2. **Git-based deploys** — Commit, push, wait for CI/CD, then check the result
 3. **Local environments** — Full Docker/MAMP/XAMPP setups that may not match production
 
-WP Sync eliminates all of that. You edit files locally with your favorite editor, and they appear on your server in seconds. No commits required, no FTP clients, no complex local environments.
+WP Dev Sync eliminates all of that. You edit files locally with your favorite editor, and they appear on your server in seconds. No commits required, no FTP clients, no complex local environments.
 
 ## Who it's for
 

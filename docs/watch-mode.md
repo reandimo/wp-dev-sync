@@ -1,12 +1,12 @@
 # Watch Mode
 
-`wp-sync watch` is the core command for development. It monitors your local files and syncs changes to the remote server automatically.
+`wp-dev-sync watch` is the core command for development. It monitors your local files and syncs changes to the remote server automatically.
 
 ## How it works
 
 ```
 ┌──────────────────────────────────────────────────┐
-│  wp-sync watch                                   │
+│  wp-dev-sync watch                                   │
 │                                                  │
 │  1. Initial sync (full push)                     │
 │  2. Start file watcher on LOCAL_PATH             │
@@ -17,7 +17,7 @@
 
 ## File watchers
 
-WP Sync selects the best available watcher for your OS:
+WP Dev Sync selects the best available watcher for your OS:
 
 ### macOS — fswatch
 
@@ -48,7 +48,7 @@ sudo apt install inotify-tools
 
 ### Windows — Polling
 
-Git Bash doesn't have native file watching, so WP Sync falls back to polling.
+Git Bash doesn't have native file watching, so WP Dev Sync falls back to polling.
 
 - Interval: every 2 seconds
 - No additional dependencies required
@@ -59,13 +59,13 @@ Git Bash doesn't have native file watching, so WP Sync falls back to polling.
 
 ## Watcher fallback
 
-If a native watcher isn't installed, WP Sync automatically falls back to polling mode. You'll see this in the output:
+If a native watcher isn't installed, WP Dev Sync automatically falls back to polling mode. You'll see this in the output:
 
 ```
   Watcher:       polling
 ```
 
-The `wp-sync setup` command warns you if a native watcher is available but not installed.
+The `wp-dev-sync setup` command warns you if a native watcher is available but not installed.
 
 ## What gets watched
 
@@ -81,11 +81,11 @@ If you're using Vite for CSS/JS bundling, run both simultaneously:
 # Terminal 1: Vite dev server
 npm run dev
 
-# Terminal 2: WP Sync watch
-wp-sync watch
+# Terminal 2: WP Dev Sync watch
+wp-dev-sync watch
 ```
 
-Vite handles hot module replacement for styles, while WP Sync pushes PHP template changes to the server.
+Vite handles hot module replacement for styles, while WP Dev Sync pushes PHP template changes to the server.
 
 ### Exclude build output
 
@@ -97,7 +97,7 @@ SYNC_EXCLUDE=.git,node_modules,.DS_Store,*.log,.env,public/hot,public/.vite
 
 ### Large initial syncs
 
-The first time you run `wp-sync watch`, the initial sync transfers all files. If your theme is large, this may take a moment. Subsequent syncs are incremental and much faster.
+The first time you run `wp-dev-sync watch`, the initial sync transfers all files. If your theme is large, this may take a moment. Subsequent syncs are incremental and much faster.
 
 ### Ctrl+C handling
 

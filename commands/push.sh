@@ -5,13 +5,13 @@ source "$WP_SYNC_LIB/_env.sh"
 source "$WP_SYNC_LIB/_ui.sh"
 
 if [ ! -f "$ENV_FILE" ]; then
-    ui_error_box ".env file not found. Run: wp-sync init"
+    ui_error_box ".env file not found. Run: wp-dev-sync init"
     exit 1
 fi
 
 source "$WP_SYNC_LIB/_sync.sh"
 
-ui_banner "WP Sync — Push" "Uploading to remote server"
+ui_banner "WP Dev Sync — Push" "Uploading to remote server"
 
 ui_section "Details" "$CH_FOLDER"
 ui_table_row "Local:" "$(basename "$LOCAL_PATH")"

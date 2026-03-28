@@ -3,9 +3,9 @@
 ## Directory structure
 
 ```
-wp-sync/
+wp-dev-sync/
 ├── bin/
-│   └── wp-sync              # CLI entry point (bash)
+│   └── wp-dev-sync              # CLI entry point (bash)
 ├── lib/
 │   ├── _env.sh              # Environment loader
 │   ├── _ui.sh               # Terminal UI functions
@@ -24,15 +24,15 @@ wp-sync/
 
 ## How it works
 
-### Entry point: `bin/wp-sync`
+### Entry point: `bin/wp-dev-sync`
 
 The CLI entry point resolves its own real path (following symlinks from `npm link` or `npm install -g`), then dispatches to the appropriate command.
 
 ```
-User runs: wp-sync push
+User runs: wp-dev-sync push
                 │
                 ▼
-        bin/wp-sync
+        bin/wp-dev-sync
                 │
                 ├── Resolves WP_SYNC_ROOT (follows symlinks)
                 ├── Exports WP_SYNC_LIB and WP_SYNC_COMMANDS
@@ -44,7 +44,7 @@ User runs: wp-sync push
         esac
 ```
 
-Built-in commands (`init`, `help`, `version`) are handled directly in `bin/wp-sync` without sourcing external files.
+Built-in commands (`init`, `help`, `version`) are handled directly in `bin/wp-dev-sync` without sourcing external files.
 
 ### Library: `lib/`
 
@@ -127,12 +127,12 @@ The `package.json` `bin` field maps the command name to the entry point:
 ```json
 {
   "bin": {
-    "wp-sync": "./bin/wp-sync"
+    "wp-dev-sync": "./bin/wp-dev-sync"
   }
 }
 ```
 
-When installed globally (`npm install -g wp-sync`), npm creates a symlink in the global bin directory pointing to `bin/wp-sync`. The entry point follows this symlink to find `WP_SYNC_ROOT`, which allows it to locate `lib/` and `commands/` regardless of where the user runs the command.
+When installed globally (`npm install -g wp-dev-sync`), npm creates a symlink in the global bin directory pointing to `bin/wp-dev-sync`. The entry point follows this symlink to find `WP_SYNC_ROOT`, which allows it to locate `lib/` and `commands/` regardless of where the user runs the command.
 
 ## Design decisions
 
@@ -154,6 +154,6 @@ When installed globally (`npm install -g wp-sync`), npm creates a symlink in the
 
 The original boilerplate looked for `.env` relative to the script location. The standalone CLI looks in the current working directory (CWD) because:
 
-- Users `cd` into their project and run `wp-sync`
+- Users `cd` into their project and run `wp-dev-sync`
 - Different projects have different configs
 - Follows the convention of tools like Docker Compose, dotenv, etc.

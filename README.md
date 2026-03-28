@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/WordPress-Sync-21759b?style=for-the-badge&logo=wordpress&logoColor=white" alt="WP Sync" />
+  <img src="https://img.shields.io/badge/WordPress-Dev%20Sync-21759b?style=for-the-badge&logo=wordpress&logoColor=white" alt="WP Dev Sync" />
   <br />
   <img src="https://img.shields.io/badge/version-1.0.0-blue?style=flat-square" alt="Version" />
   <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" />
@@ -25,7 +25,7 @@
 ## The Problem
 
 ```
-😩 The Old Way                          ✨ The WP Sync Way
+😩 The Old Way                          ✨ The WP Dev Sync Way
 ─────────────────────                   ─────────────────────
 1. Edit theme file locally              1. Edit theme file locally
 2. Open FileZilla                       2. That's it. It's already
@@ -42,7 +42,7 @@
 ## 📦 Install
 
 ```bash
-npm install -g wp-sync
+npm install -g wp-dev-sync
 ```
 
 <details>
@@ -50,11 +50,11 @@ npm install -g wp-sync
 
 ```bash
 # Use without installing
-npx wp-sync <command>
+npx wp-dev-sync <command>
 
 # Manual install (clone + link)
-git clone https://github.com/reandimo/wp-sync.git
-cd wp-sync && npm link
+git clone https://github.com/reandimo/wp-dev-sync.git
+cd wp-dev-sync && npm link
 ```
 </details>
 
@@ -67,13 +67,13 @@ cd wp-sync && npm link
 ```bash
 cd /path/to/my-wordpress-site     # 1. Go to your project
 
-wp-sync init                      # 2. Creates .env config file
+wp-dev-sync init                      # 2. Creates .env config file
 
 nano .env                         # 3. Set your server credentials
 
-wp-sync setup                     # 4. Verify everything works
+wp-dev-sync setup                     # 4. Verify everything works
 
-wp-sync watch                     # 5. Start syncing! 🎉
+wp-dev-sync watch                     # 5. Start syncing! 🎉
 ```
 
 That's it. Every file you save now appears on your server automatically.
@@ -235,7 +235,7 @@ sudo apt install lftp        # Linux
 
 ## 👀 Watch Mode
 
-`wp-sync watch` monitors your files and syncs on every save:
+`wp-dev-sync watch` monitors your files and syncs on every save:
 
 ```
 ┌───────────┬──────────────┬───────────┐
@@ -251,8 +251,8 @@ sudo apt install lftp        # Linux
 
 ```bash
 # Terminal 1                    # Terminal 2
-npm run dev                     wp-sync watch
-# Vite handles CSS/JS HMR      # WP Sync handles PHP uploads
+npm run dev                     wp-dev-sync watch
+# Vite handles CSS/JS HMR      # WP Dev Sync handles PHP uploads
 ```
 
 ---
@@ -268,7 +268,7 @@ TUNNEL_DOMAIN=staging.mysite.com
 ```
 
 ```bash
-wp-sync tunnel
+wp-dev-sync tunnel
 # → https://random-words.trycloudflare.com
 ```
 
@@ -323,8 +323,8 @@ export PATH="/c/ProgramData/chocolatey/bin:$PATH"
 ## 🏗️ Architecture
 
 ```
-wp-sync/
-├── bin/wp-sync              # CLI entry point
+wp-dev-sync/
+├── bin/wp-dev-sync              # CLI entry point
 ├── lib/
 │   ├── _env.sh              # .env loader + Windows PATH fix
 │   ├── _ui.sh               # Terminal UI (colors, banners, spinners)
@@ -342,7 +342,7 @@ wp-sync/
 
 ## 💡 Not just WordPress
 
-While wp-sync is built for WordPress theme development, it works with **any directory** you need to sync remotely. Just set `LOCAL_PATH` and `REMOTE_PATH` to whatever you need.
+While wp-dev-sync is built for WordPress theme development, it works with **any directory** you need to sync remotely. Just set `LOCAL_PATH` and `REMOTE_PATH` to whatever you need.
 
 ```bash
 # Sync a React app
@@ -359,9 +359,9 @@ REMOTE_PATH=/var/www/html/blog
 <p align="center">
   <a href="docs/home.md"><b>📖 Full Documentation</b></a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/reandimo/wp-sync/issues"><b>🐛 Report Bug</b></a>
+  <a href="https://github.com/reandimo/wp-dev-sync/issues"><b>🐛 Report Bug</b></a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/reandimo/wp-sync/issues"><b>💡 Request Feature</b></a>
+  <a href="https://github.com/reandimo/wp-dev-sync/issues"><b>💡 Request Feature</b></a>
 </p>
 
 <p align="center">

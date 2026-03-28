@@ -1,6 +1,6 @@
 # Protocols
 
-WP Sync supports two protocols for transferring files to your remote server. Set the protocol in your `.env`:
+WP Dev Sync supports two protocols for transferring files to your remote server. Set the protocol in your `.env`:
 
 ```bash
 SYNC_PROTOCOL=ssh    # or: ftp
@@ -134,6 +134,6 @@ Changing one line in a 50KB PHP file:
 
 ## Windows path handling
 
-On Windows (Git Bash), `lftp` installed via Chocolatey expects Windows-style paths (`C:\Users\...`) rather than Unix-style (`/c/Users/...`). WP Sync automatically converts paths using `cygpath -w` when running on Windows with FTP protocol.
+On Windows (Git Bash), `lftp` installed via Chocolatey expects Windows-style paths (`C:\Users\...`) rather than Unix-style (`/c/Users/...`). WP Dev Sync automatically converts paths using `cygpath -w` when running on Windows with FTP protocol.
 
 This is handled transparently — you don't need to do anything special.

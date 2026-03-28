@@ -8,7 +8,7 @@ SYNC_PROTOCOL="${SYNC_PROTOCOL:-ssh}"
 REMOTE_PORT="${REMOTE_PORT:-$([ "$SYNC_PROTOCOL" = "ftp" ] && echo 21 || echo 22)}"
 
 # ── Banner ───────────────────────────────────────────────────
-ui_banner "WP Sync — Preflight Check" "Verifying dependencies and connection"
+ui_banner "WP Dev Sync — Preflight Check" "Verifying dependencies and connection"
 
 # ── System Info ──────────────────────────────────────────────
 ui_section "System" "$CH_FOLDER"
@@ -160,7 +160,7 @@ fi
 if [ "$MISSING" -eq 0 ]; then
     ui_success_box "All dependencies installed. Ready to sync!"
     echo ""
-    printf "  %s%s%s Run %s%swp-sync watch%s to start watching and syncing.\n\n" \
+    printf "  %s%s%s Run %s%swp-dev-sync watch%s to start watching and syncing.\n\n" \
         "$C_DIM" "$CH_ARROW_R" "$C_RESET" \
         "$C_BRIGHT_WHITE" "$C_BOLD" "$C_RESET"
 else

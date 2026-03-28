@@ -136,7 +136,7 @@ SYNC_DELETE=false
 
 ## Plugin development
 
-WP Sync isn't limited to themes. You can sync a plugin directory too.
+WP Dev Sync isn't limited to themes. You can sync a plugin directory too.
 
 ```bash
 # .env
@@ -152,7 +152,7 @@ SYNC_DELETE=true
 
 ## Non-WordPress project
 
-While WP Sync is designed for WordPress, it works with any directory:
+While WP Dev Sync is designed for WordPress, it works with any directory:
 
 ```bash
 # .env

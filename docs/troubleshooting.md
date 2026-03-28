@@ -6,7 +6,7 @@
 
 ```
 ┌─ Error ──────────────────────────────────────────┐
-│ .env file not found. Run: wp-sync init           │
+│ .env file not found. Run: wp-dev-sync init           │
 └──────────────────────────────────────────────────┘
 ```
 
@@ -14,7 +14,7 @@
 
 **Fix:**
 ```bash
-wp-sync init    # Creates .env from template
+wp-dev-sync init    # Creates .env from template
 ```
 
 Make sure you're in the right directory (your project root).
@@ -53,7 +53,7 @@ REMOTE_PATH=/var/www/html/wp-content/themes/my-theme
 
 **Fix options:**
 
-1. WP Sync auto-adds common paths — restart Git Bash and try again
+1. WP Dev Sync auto-adds common paths — restart Git Bash and try again
 2. Manual fix:
    ```bash
    export PATH="/c/ProgramData/chocolatey/bin:/c/ProgramData/chocolatey/lib/rsync/tools/bin:$PATH"
@@ -139,7 +139,7 @@ cat ~/.ssh/id_ed25519.pub
 
 **Cause:** lftp's SSL verification fails with the server's certificate.
 
-WP Sync already sets `ssl:verify-certificate no` to avoid this. If you still see SSL errors:
+WP Dev Sync already sets `ssl:verify-certificate no` to avoid this. If you still see SSL errors:
 
 ```bash
 # Test directly with lftp
@@ -185,7 +185,7 @@ sudo apt install inotify-tools
 
 **Cause:** lftp on Windows (Chocolatey) doesn't understand Unix-style paths (`/c/Users/...`).
 
-WP Sync handles this automatically by converting paths with `cygpath -w`. If you still see path errors, check that `cygpath` is available:
+WP Dev Sync handles this automatically by converting paths with `cygpath -w`. If you still see path errors, check that `cygpath` is available:
 
 ```bash
 which cygpath
@@ -199,7 +199,7 @@ which cygpath
 ### Run the preflight check
 
 ```bash
-wp-sync setup
+wp-dev-sync setup
 ```
 
 This command checks everything and provides actionable suggestions.

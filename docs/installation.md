@@ -2,16 +2,16 @@
 
 ## npm (recommended)
 
-Install globally so `wp-sync` is available everywhere:
+Install globally so `wp-dev-sync` is available everywhere:
 
 ```bash
-npm install -g wp-sync
+npm install -g wp-dev-sync
 ```
 
 Or use it without installing via npx:
 
 ```bash
-npx wp-sync <command>
+npx wp-dev-sync <command>
 ```
 
 ## Manual install
@@ -19,12 +19,12 @@ npx wp-sync <command>
 Clone the repo and link it:
 
 ```bash
-git clone https://github.com/reandimo/wp-sync.git
-cd wp-sync
+git clone https://github.com/reandimo/wp-dev-sync.git
+cd wp-dev-sync
 npm link
 ```
 
-This creates a global symlink so you can run `wp-sync` from any directory.
+This creates a global symlink so you can run `wp-dev-sync` from any directory.
 
 ## Prerequisites
 
@@ -68,15 +68,15 @@ After installing, run the preflight check:
 
 ```bash
 cd /path/to/your/wordpress-project
-wp-sync init     # Creates .env
-wp-sync setup    # Checks everything
+wp-dev-sync init     # Creates .env
+wp-dev-sync setup    # Checks everything
 ```
 
 The setup command will show you what's installed, what's missing, and how to fix it.
 
 ## Windows notes
 
-WP Sync is designed to run in **Git Bash** on Windows. The CLI automatically extends your PATH to find tools installed via:
+WP Dev Sync is designed to run in **Git Bash** on Windows. The CLI automatically extends your PATH to find tools installed via:
 
 - **Chocolatey** (`/c/ProgramData/chocolatey/bin`)
 - **Scoop** (`~/scoop/shims`)

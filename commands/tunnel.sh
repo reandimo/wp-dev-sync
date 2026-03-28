@@ -5,7 +5,7 @@ source "$WP_SYNC_LIB/_env.sh"
 source "$WP_SYNC_LIB/_ui.sh"
 
 if [ ! -f "$ENV_FILE" ]; then
-    ui_error_box ".env file not found. Run: wp-sync init"
+    ui_error_box ".env file not found. Run: wp-dev-sync init"
     exit 1
 fi
 
@@ -17,7 +17,7 @@ if [ -z "$TUNNEL_DOMAIN" ]; then
     exit 1
 fi
 
-ui_banner "WP Sync — Tunnel" "Exposing remote site to the internet"
+ui_banner "WP Dev Sync — Tunnel" "Exposing remote site to the internet"
 
 ui_section "Configuration" "$CH_LOCK"
 ui_table_row "Tool:" "${C_ACCENT_BRIGHT}${C_BOLD}$TUNNEL_TOOL${C_RESET}" "ok"

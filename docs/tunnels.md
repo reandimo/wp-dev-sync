@@ -1,6 +1,6 @@
 # Tunnels
 
-WP Sync can expose your remote site through a public URL using `wp-sync tunnel`. This is useful for sharing previews with clients without configuring DNS or exposing the server's IP.
+WP Dev Sync can expose your remote site through a public URL using `wp-dev-sync tunnel`. This is useful for sharing previews with clients without configuring DNS or exposing the server's IP.
 
 ## Configuration
 
@@ -27,7 +27,7 @@ brew install cloudflared       # macOS
 ### How it works
 
 ```bash
-wp-sync tunnel
+wp-dev-sync tunnel
 # → cloudflared tunnel --url https://staging.mysite.com
 ```
 
@@ -57,7 +57,7 @@ brew install ngrok             # macOS
 ### How it works
 
 ```bash
-wp-sync tunnel
+wp-dev-sync tunnel
 # → ngrok http https://staging.mysite.com
 ```
 
@@ -78,10 +78,10 @@ Run both watch and tunnel simultaneously:
 
 ```bash
 # Terminal 1
-wp-sync watch
+wp-dev-sync watch
 
 # Terminal 2
-wp-sync tunnel
+wp-dev-sync tunnel
 ```
 
 This gives you a full development workflow: edit locally, auto-sync to server, share via public URL.

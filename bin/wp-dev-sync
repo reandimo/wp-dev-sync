@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# wp-sync — CLI for syncing WordPress themes to remote servers.
+# wp-dev-sync — CLI for syncing WordPress themes to remote servers.
 # @author Renan Diaz <https://reandimo.dev>
 set -euo pipefail
 
@@ -21,9 +21,9 @@ export WP_SYNC_COMMANDS="$WP_SYNC_ROOT/commands"
 
 show_help() {
     source "$WP_SYNC_LIB/_ui.sh"
-    ui_banner "WP Sync" "v$VERSION"
+    ui_banner "WP Dev Sync" "v$VERSION"
 
-    printf "  %s%sUsage:%s  wp-sync %s<command>%s\n\n" \
+    printf "  %s%sUsage:%s  wp-dev-sync %s<command>%s\n\n" \
         "$C_BRIGHT_WHITE" "$C_BOLD" "$C_RESET" \
         "$C_ACCENT_BRIGHT" "$C_RESET"
 
@@ -39,10 +39,10 @@ show_help() {
     ui_divider
     echo ""
     printf "  %s%sQuick start:%s\n\n" "$C_ACCENT_BRIGHT" "$C_BOLD" "$C_RESET"
-    printf "    %s%s1%s%s  wp-sync init          %s# Create .env in your project%s\n" "$C_ACCENT" "$C_BOLD" "$C_RESET" "$C_BRIGHT_WHITE" "$C_DIM" "$C_RESET"
+    printf "    %s%s1%s%s  wp-dev-sync init          %s# Create .env in your project%s\n" "$C_ACCENT" "$C_BOLD" "$C_RESET" "$C_BRIGHT_WHITE" "$C_DIM" "$C_RESET"
     printf "    %s%s2%s%s  Edit .env             %s# Set your server credentials%s\n" "$C_ACCENT" "$C_BOLD" "$C_RESET" "$C_BRIGHT_WHITE" "$C_DIM" "$C_RESET"
-    printf "    %s%s3%s%s  wp-sync setup         %s# Verify everything works%s\n" "$C_ACCENT" "$C_BOLD" "$C_RESET" "$C_BRIGHT_WHITE" "$C_DIM" "$C_RESET"
-    printf "    %s%s4%s%s  wp-sync watch         %s# Start syncing!%s\n" "$C_ACCENT" "$C_BOLD" "$C_RESET" "$C_BRIGHT_WHITE" "$C_DIM" "$C_RESET"
+    printf "    %s%s3%s%s  wp-dev-sync setup         %s# Verify everything works%s\n" "$C_ACCENT" "$C_BOLD" "$C_RESET" "$C_BRIGHT_WHITE" "$C_DIM" "$C_RESET"
+    printf "    %s%s4%s%s  wp-dev-sync watch         %s# Start syncing!%s\n" "$C_ACCENT" "$C_BOLD" "$C_RESET" "$C_BRIGHT_WHITE" "$C_DIM" "$C_RESET"
     echo ""
 }
 
@@ -53,7 +53,7 @@ cmd_init() {
     local target="$(pwd)/.env"
     local template="$WP_SYNC_ROOT/.env.example"
 
-    ui_banner "WP Sync — Init" "Setting up your project"
+    ui_banner "WP Dev Sync — Init" "Setting up your project"
 
     if [ -f "$target" ]; then
         ui_warn_box ".env already exists in this directory"
@@ -62,7 +62,7 @@ cmd_init() {
     fi
 
     if [ ! -f "$template" ]; then
-        ui_error_box "Template .env.example not found in wp-sync installation"
+        ui_error_box "Template .env.example not found in wp-dev-sync installation"
         exit 1
     fi
 
@@ -71,7 +71,7 @@ cmd_init() {
     echo ""
     ui_info "Next steps:"
     ui_step "Edit ${C_BRIGHT_WHITE}.env${C_RESET} with your server credentials"
-    ui_step "Run ${C_ACCENT_BRIGHT}wp-sync setup${C_RESET} to verify"
+    ui_step "Run ${C_ACCENT_BRIGHT}wp-dev-sync setup${C_RESET} to verify"
     echo ""
 }
 
@@ -79,7 +79,7 @@ cmd_init() {
 
 cmd_version() {
     source "$WP_SYNC_LIB/_ui.sh"
-    printf "\n  %s%swp-sync%s %sv%s%s\n\n" \
+    printf "\n  %s%swp-dev-sync%s %sv%s%s\n\n" \
         "$C_ACCENT_BRIGHT" "$C_BOLD" "$C_RESET" \
         "$C_DIM" "$VERSION" "$C_RESET"
 }
