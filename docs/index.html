@@ -194,16 +194,18 @@ nav .container {
   padding: 80px 20px 40px;
 }
 
-.hero-inner { max-width: 720px; width: 100%; }
+.hero-inner { max-width: 720px; width: 100%; text-align: center; }
 
 .hero-ascii {
   color: var(--green);
-  font-size: clamp(7px, 1.4vw, 13px);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: clamp(5px, 1.1vw, 11px);
   white-space: pre;
-  line-height: 1.15;
+  line-height: 1.1;
   margin-bottom: 32px;
   animation: pulse-glow 4s ease-in-out infinite;
-  text-align: center;
+  text-align: left;
+  display: inline-block;
 }
 
 .hero-prompt {
@@ -606,7 +608,7 @@ footer {
 @media (max-width: 768px) {
   .problem-grid, .proto-grid { grid-template-columns: 1fr; }
   .nav-links { display: none; }
-  .hero-ascii { font-size: 6px; }
+  .hero-ascii { font-size: 4.5px; }
   .flow { flex-direction: column; }
   .flow-arrow { transform: rotate(90deg); }
   .cmd-row { grid-template-columns: 24px 100px 1fr; }
@@ -614,7 +616,7 @@ footer {
 }
 
 @media (max-width: 480px) {
-  .hero-ascii { font-size: 4.5px; }
+  .hero-ascii { font-size: 3.5px; }
   .hero-links { flex-direction: column; }
   .btn { width: 100%; justify-content: center; }
 }
@@ -642,18 +644,12 @@ footer {
 <section class="hero">
   <div class="hero-inner">
     <pre class="hero-ascii" aria-hidden="true">
- ██╗    ██╗██████╗       ██████╗ ███████╗██╗   ██╗
- ██║    ██║██╔══██╗      ██╔══██╗██╔════╝██║   ██║
- ██║ █╗ ██║██████╔╝█████╗██║  ██║█████╗  ██║   ██║
- ██║███╗██║██╔═══╝ ╚════╝██║  ██║██╔══╝  ╚██╗ ██╔╝
- ╚███╔███╔╝██║            ██████╔╝███████╗ ╚████╔╝
-  ╚══╝╚══╝ ╚═╝            ╚═════╝ ╚══════╝  ╚═══╝
-         ███████╗██╗   ██╗███╗   ██╗ ██████╗
-         ██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
-         ███████╗ ╚████╔╝ ██╔██╗ ██║██║
-         ╚════██║  ╚██╔╝  ██║╚██╗██║██║
-         ███████║   ██║   ██║ ╚████║╚██████╗
-         ╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝</pre>
+██╗    ██╗██████╗       ██████╗ ███████╗██╗   ██╗      ███████╗██╗   ██╗███╗   ██╗ ██████╗
+██║    ██║██╔══██╗      ██╔══██╗██╔════╝██║   ██║      ██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+██║ █╗ ██║██████╔╝█████╗██║  ██║█████╗  ██║   ██║█████╗███████╗ ╚████╔╝ ██╔██╗ ██║██║
+██║███╗██║██╔═══╝ ╚════╝██║  ██║██╔══╝  ╚██╗ ██╔╝╚════╝╚════██║  ╚██╔╝  ██║╚██╗██║██║
+╚███╔███╔╝██║            ██████╔╝███████╗ ╚████╔╝       ███████║   ██║   ██║ ╚████║╚██████╗
+ ╚══╝╚══╝ ╚═╝            ╚═════╝ ╚══════╝  ╚═══╝        ╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝</pre>
 
     <div class="hero-prompt">
       <span class="prompt">$ </span><span class="cmd">wp-dev-sync watch</span><span class="cursor"></span>
