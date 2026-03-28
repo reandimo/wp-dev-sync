@@ -631,6 +631,7 @@ footer {
       <li><a href="#commands">Commands</a></li>
       <li><a href="#how">How It Works</a></li>
       <li><a href="#protocols">Protocols</a></li>
+      <li><a href="#syncignore">.syncignore</a></li>
       <li><a href="#start">Quick Start</a></li>
       <li><a href="https://github.com/reandimo/wp-dev-sync" target="_blank">GitHub ↗</a></li>
     </ul>
@@ -852,6 +853,45 @@ footer {
           Install: <code>choco install lftp</code> · <code>brew install lftp</code>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SYNCIGNORE ═══ -->
+<section id="syncignore">
+  <div class="container">
+    <div class="section-header">cat .syncignore</div>
+
+    <div class="window">
+      <div class="window-bar">.syncignore</div>
+      <div class="window-body" style="font-size:14px;line-height:1.8;">
+        <div style="color:var(--gray-dim)"># Files and directories to exclude from sync</div>
+        <div style="color:var(--gray-dim)"># One pattern per line. Supports glob patterns.</div>
+        <div>&nbsp;</div>
+        <div style="color:var(--gray-dim)"># Version control</div>
+        <div style="color:var(--white)">.git</div>
+        <div>&nbsp;</div>
+        <div style="color:var(--gray-dim)"># Dependencies</div>
+        <div style="color:var(--white)">node_modules</div>
+        <div style="color:var(--white)">vendor</div>
+        <div>&nbsp;</div>
+        <div style="color:var(--gray-dim)"># Build artifacts</div>
+        <div style="color:var(--white)">public/hot</div>
+        <div style="color:var(--white)">public/.vite</div>
+        <div style="color:var(--yellow)">*.map</div>
+        <div>&nbsp;</div>
+        <div style="color:var(--gray-dim)"># IDE &amp; OS</div>
+        <div style="color:var(--white)">.idea</div>
+        <div style="color:var(--white)">.vscode</div>
+        <div style="color:var(--white)">.DS_Store</div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;font-size:14px;color:var(--gray);line-height:1.8;">
+      <div><span style="color:var(--green)">✔</span> Created automatically by <span style="color:var(--white)">wp-dev-sync init</span></div>
+      <div><span style="color:var(--green)">✔</span> Works alongside <span style="color:var(--cyan)">SYNC_EXCLUDE</span> in .env — patterns are merged</div>
+      <div><span style="color:var(--green)">✔</span> SSH uses rsync <span style="color:var(--cyan)">--exclude-from</span> natively (full glob support)</div>
+      <div><span style="color:var(--green)">✔</span> FTP merges patterns into lftp exclude flags</div>
     </div>
   </div>
 </section>

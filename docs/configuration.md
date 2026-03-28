@@ -105,6 +105,53 @@ SYNC_EXCLUDE=.git,node_modules,.DS_Store,*.log,.env,public/hot
 SYNC_EXCLUDE=.git,node_modules,.DS_Store,*.log,.env,public/hot,public/fonts,vendor
 ```
 
+### .syncignore File
+
+For more granular control, create a `.syncignore` file in your project root. Run `wp-dev-sync init` to generate one from the built-in template.
+
+```bash
+# .syncignore — one pattern per line, # for comments
+
+# Version control
+.git
+
+# Dependencies
+node_modules
+vendor
+
+# Environment
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Build artifacts
+public/hot
+public/.vite
+
+# IDE
+.idea
+.vscode
+*.swp
+
+# Source maps
+*.map
+```
+
+**How it works:**
+
+- For **SSH (rsync):** Uses `--exclude-from` natively — supports full rsync glob syntax
+- For **FTP (lftp):** Patterns are merged into `SYNC_EXCLUDE` internally
+
+`.syncignore` and `SYNC_EXCLUDE` work together. Patterns from both sources are combined — they don't replace each other.
+
+**Priority:** If a pattern appears in both files, it's simply applied once (no conflict).
+
 ### SYNC_DELETE
 
 Controls whether files deleted locally should also be deleted on the remote server.

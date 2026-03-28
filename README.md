@@ -118,6 +118,26 @@ SYNC_EXCLUDE=.git,node_modules,.DS_Store,*.log,.env
 SYNC_DELETE=false          # true = mirror exact state
 ```
 
+### .syncignore
+
+For more control, create a `.syncignore` file in your project root (or run `wp-dev-sync init`). One pattern per line, like `.gitignore`:
+
+```bash
+# .syncignore
+node_modules
+vendor
+.git
+.env
+*.log
+*.map
+public/hot
+public/.vite
+.idea
+.vscode
+```
+
+Both `.syncignore` and `SYNC_EXCLUDE` work together — patterns from both are merged.
+
 ### Example Setups
 
 <details>
