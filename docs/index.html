@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>wp-dev-sync — WordPress Theme Sync CLI</title>
+<meta name="description" content="CLI for syncing WordPress themes to remote servers via SSH or FTP. Watch mode, auto-sync, public tunnels. Like shopify theme dev, but for WordPress.">
+<meta property="og:title" content="wp-dev-sync">
+<meta property="og:description" content="CLI for syncing WordPress themes to remote servers. SSH &amp; FTP. Watch mode. Zero config.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   WP-DEV-SYNC — 90s TERMINAL LANDING PAGE
+   @author Renan Diaz <https://reandimo.dev>
+   ═══════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --green: #33ff33;
+  --green-dim: #1a8c1a;
+  --green-bg: rgba(51, 255, 51, 0.04);
+  --cyan: #00cccc;
+  --cyan-bright: #00ffff;
+  --yellow: #cccc00;
+  --yellow-bright: #ffff33;
+  --red: #cc3333;
+  --white: #cccccc;
+  --white-bright: #ffffff;
+  --gray: #666666;
+  --gray-dim: #333333;
+  --bg: #0c0c0c;
+  --bg-panel: #111111;
+  --border: #2a2a2a;
+  --font: 'IBM Plex Mono', 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--green);
+  overflow-x: hidden;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+/* ── Scanlines ───────────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.08) 3px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+::selection {
+  background: var(--green);
+  color: var(--bg);
+}
+
+a { color: var(--cyan-bright); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Container ───────────────────────────────────────────── */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ── Window (terminal panel) ─────────────────────────────── */
+.window {
+  border: 1px solid var(--border);
+  background: var(--bg-panel);
+  margin-bottom: 2px;
+  position: relative;
+}
+
+.window-bar {
+  background: #1a1a2e;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--gray);
+  user-select: none;
+}
+
+.window-bar::before {
+  content: '■';
+  color: var(--cyan);
+  font-size: 10px;
+}
+
+.window-body {
+  padding: 24px;
+}
+
+/* ── Animations ──────────────────────────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { text-shadow: 0 0 4px rgba(51, 255, 51, 0.3); }
+  50% { text-shadow: 0 0 12px rgba(51, 255, 51, 0.6); }
+}
+
+.cursor {
+  display: inline-block;
+  width: 8px;
+  height: 16px;
+  background: var(--green);
+  animation: blink 1s step-end infinite;
+  vertical-align: text-bottom;
+  margin-left: 2px;
+}
+
+.fade-in {
+  opacity: 0;
+  animation: fade-up 0.5s ease forwards;
+}
+
+/* ── Nav ─────────────────────────────────────────────────── */
+nav {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: rgba(12, 12, 12, 0.95);
+  backdrop-filter: blur(4px);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+  padding: 8px 0;
+}
+
+nav .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-logo {
+  color: var(--green);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-decoration: none;
+}
+
+.nav-logo span { color: var(--gray); }
+
+.nav-links { display: flex; gap: 20px; list-style: none; }
+
+.nav-links a {
+  color: var(--gray);
+  font-size: 13px;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--green); }
+
+/* ── Hero ────────────────────────────────────────────────── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px 40px;
+}
+
+.hero-inner { max-width: 720px; width: 100%; }
+
+.hero-ascii {
+  color: var(--green);
+  font-size: clamp(7px, 1.4vw, 13px);
+  white-space: pre;
+  line-height: 1.15;
+  margin-bottom: 32px;
+  animation: pulse-glow 4s ease-in-out infinite;
+  text-align: center;
+}
+
+.hero-prompt {
+  margin-bottom: 24px;
+  font-size: 16px;
+}
+
+.hero-prompt .prompt { color: var(--cyan); }
+.hero-prompt .cmd { color: var(--white-bright); }
+
+.hero-desc {
+  color: var(--gray);
+  font-size: 16px;
+  margin-bottom: 8px;
+  line-height: 1.7;
+}
+
+.hero-desc strong { color: var(--white); font-weight: 500; }
+.hero-desc em { color: var(--cyan); font-style: normal; }
+
+.hero-links {
+  margin-top: 32px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 24px;
+  text-decoration: none;
+  border: 1px solid;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: var(--green);
+  color: var(--bg);
+  border-color: var(--green);
+}
+
+.btn-primary:hover {
+  background: var(--white-bright);
+  border-color: var(--white-bright);
+  text-decoration: none;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--cyan);
+  border-color: var(--border);
+}
+
+.btn-ghost:hover {
+  border-color: var(--cyan);
+  text-decoration: none;
+}
+
+.hero-version {
+  margin-top: 24px;
+  color: var(--gray-dim);
+  font-size: 12px;
+}
+
+/* ── Section ─────────────────────────────────────────────── */
+section {
+  padding: 80px 0;
+}
+
+.section-header {
+  margin-bottom: 32px;
+  color: var(--cyan);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.section-header::before {
+  content: '$ ';
+  color: var(--green);
+}
+
+/* ── Problem section ─────────────────────────────────────── */
+.problem-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+}
+
+.problem-col { padding: 24px; }
+
+.problem-col h3 {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+.problem-col ul {
+  list-style: none;
+  font-size: 14px;
+  line-height: 2;
+}
+
+.problem-old {
+  background: rgba(204, 51, 51, 0.05);
+  border: 1px solid rgba(204, 51, 51, 0.15);
+}
+
+.problem-old h3 { color: var(--red); }
+.problem-old li { color: var(--gray); }
+.problem-old li::before { content: '✗ '; color: var(--red); }
+
+.problem-new {
+  background: var(--green-bg);
+  border: 1px solid rgba(51, 255, 51, 0.1);
+}
+
+.problem-new h3 { color: var(--green); }
+.problem-new li { color: var(--white); }
+.problem-new li::before { content: '✔ '; color: var(--green); }
+
+.problem-footer {
+  text-align: center;
+  margin-top: 32px;
+  color: var(--gray);
+  font-size: 14px;
+}
+
+.problem-footer code {
+  color: var(--cyan);
+  background: rgba(0, 204, 204, 0.08);
+  padding: 2px 8px;
+}
+
+/* ── Commands ────────────────────────────────────────────── */
+.commands-output {
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.commands-output .c-title {
+  color: var(--white-bright);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.commands-output .c-usage {
+  color: var(--gray);
+  margin-bottom: 16px;
+}
+
+.commands-output .c-usage span { color: var(--cyan); }
+
+.cmd-row {
+  display: grid;
+  grid-template-columns: 24px 120px 1fr;
+  gap: 8px;
+  align-items: baseline;
+  padding: 2px 0;
+}
+
+.cmd-icon { color: var(--cyan); text-align: center; font-size: 13px; }
+.cmd-name { color: var(--green); font-weight: 600; }
+.cmd-desc { color: var(--gray); }
+
+.commands-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 16px 0;
+}
+
+.commands-quick {
+  color: var(--gray);
+  margin-top: 8px;
+}
+
+.commands-quick .step-num { color: var(--cyan); font-weight: 600; }
+.commands-quick .step-cmd { color: var(--white); }
+.commands-quick .step-comment { color: var(--gray-dim); }
+
+/* ── How It Works ────────────────────────────────────────── */
+.flow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+  margin: 40px 0;
+}
+
+.flow-step {
+  text-align: center;
+  padding: 20px;
+  min-width: 160px;
+}
+
+.flow-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.flow-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--green);
+  margin-bottom: 4px;
+}
+
+.flow-desc {
+  font-size: 12px;
+  color: var(--gray);
+}
+
+.flow-arrow {
+  color: var(--gray-dim);
+  font-size: 20px;
+  padding: 0 4px;
+}
+
+.flow-ascii {
+  text-align: center;
+  color: var(--gray-dim);
+  font-size: 13px;
+  white-space: pre;
+  line-height: 1.3;
+  margin: 24px 0;
+}
+
+/* ── Protocols ───────────────────────────────────────────── */
+.proto-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+}
+
+.proto-card {
+  padding: 28px 24px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel);
+}
+
+.proto-name {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.proto-name .badge {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 8px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.proto-sub {
+  color: var(--gray);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.proto-list {
+  list-style: none;
+  font-size: 13px;
+  line-height: 2;
+}
+
+.proto-list li { color: var(--white); }
+.proto-list .ok::before { content: '✔ '; color: var(--green); }
+.proto-list .no::before { content: '✗ '; color: var(--red); }
+
+.proto-install {
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--gray);
+}
+
+.proto-install code {
+  color: var(--yellow);
+  background: rgba(204, 204, 0, 0.06);
+  padding: 1px 6px;
+}
+
+/* ── Quick Start Terminal ────────────────────────────────── */
+.terminal {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.terminal-bar {
+  background: #1a1a2e;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.terminal-dot {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+}
+
+.terminal-dot.r { background: #ff5f56; }
+.terminal-dot.y { background: #ffbd2e; }
+.terminal-dot.g { background: #27c93f; }
+
+.terminal-title {
+  font-size: 11px;
+  color: var(--gray);
+  margin-left: 8px;
+}
+
+.terminal-body {
+  padding: 20px;
+  font-size: 14px;
+  line-height: 1.8;
+  min-height: 200px;
+}
+
+.terminal-body .line { white-space: pre-wrap; }
+.terminal-body .prompt { color: var(--cyan); }
+.terminal-body .cmd { color: var(--white-bright); }
+.terminal-body .comment { color: var(--gray-dim); }
+.terminal-body .ok { color: var(--green); }
+.terminal-body .info { color: var(--cyan); }
+.terminal-body .file-php { color: #cc77cc; }
+.terminal-body .file-css { color: var(--cyan); }
+.terminal-body .file-js { color: var(--yellow); }
+.terminal-body .file-htm { color: var(--green); }
+.terminal-body .file-json { color: #ccaa33; }
+
+/* ── Watch Mode ──────────────────────────────────────────── */
+.watch-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin: 24px 0;
+}
+
+.watch-table th {
+  text-align: left;
+  color: var(--cyan);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 1px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.watch-table td {
+  padding: 8px 16px;
+  color: var(--white);
+  border-bottom: 1px solid var(--border);
+}
+
+.watch-table .dim { color: var(--gray); }
+
+/* ── Footer ──────────────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 40px 0;
+  text-align: center;
+}
+
+.footer-ascii {
+  color: var(--gray-dim);
+  font-size: 11px;
+  white-space: pre;
+  line-height: 1.2;
+  margin-bottom: 20px;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.footer-copy {
+  color: var(--gray-dim);
+  font-size: 12px;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .problem-grid, .proto-grid { grid-template-columns: 1fr; }
+  .nav-links { display: none; }
+  .hero-ascii { font-size: 6px; }
+  .flow { flex-direction: column; }
+  .flow-arrow { transform: rotate(90deg); }
+  .cmd-row { grid-template-columns: 24px 100px 1fr; }
+  section { padding: 48px 0; }
+}
+
+@media (max-width: 480px) {
+  .hero-ascii { font-size: 4.5px; }
+  .hero-links { flex-direction: column; }
+  .btn { width: 100%; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<nav>
+  <div class="container">
+    <a href="#" class="nav-logo">wp-dev-sync <span>v1.0.0</span></a>
+    <ul class="nav-links">
+      <li><a href="#problem">Why</a></li>
+      <li><a href="#commands">Commands</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#protocols">Protocols</a></li>
+      <li><a href="#start">Quick Start</a></li>
+      <li><a href="https://github.com/reandimo/wp-dev-sync" target="_blank">GitHub ↗</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-inner">
+    <pre class="hero-ascii" aria-hidden="true">
+ ██╗    ██╗██████╗       ██████╗ ███████╗██╗   ██╗
+ ██║    ██║██╔══██╗      ██╔══██╗██╔════╝██║   ██║
+ ██║ █╗ ██║██████╔╝█████╗██║  ██║█████╗  ██║   ██║
+ ██║███╗██║██╔═══╝ ╚════╝██║  ██║██╔══╝  ╚██╗ ██╔╝
+ ╚███╔███╔╝██║            ██████╔╝███████╗ ╚████╔╝
+  ╚══╝╚══╝ ╚═╝            ╚═════╝ ╚══════╝  ╚═══╝
+         ███████╗██╗   ██╗███╗   ██╗ ██████╗
+         ██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+         ███████╗ ╚████╔╝ ██╔██╗ ██║██║
+         ╚════██║  ╚██╔╝  ██║╚██╗██║██║
+         ███████║   ██║   ██║ ╚████║╚██████╗
+         ╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝</pre>
+
+    <div class="hero-prompt">
+      <span class="prompt">$ </span><span class="cmd">wp-dev-sync watch</span><span class="cursor"></span>
+    </div>
+
+    <p class="hero-desc">
+      CLI for syncing <strong>WordPress themes</strong> to remote servers.<br>
+      Edit locally. Auto-sync on save. <em>SSH</em> or <em>FTP</em>.<br>
+      Like <code style="color:var(--yellow);background:rgba(204,204,0,0.08);padding:2px 8px;">shopify theme dev</code>, but for WordPress.
+    </p>
+
+    <div class="hero-links">
+      <a href="https://github.com/reandimo/wp-dev-sync" class="btn btn-primary" target="_blank">★ GitHub</a>
+      <a href="#start" class="btn btn-ghost">Quick Start →</a>
+      <a href="https://www.npmjs.com/package/wp-dev-sync" class="btn btn-ghost">npm ↗</a>
+    </div>
+
+    <p class="hero-version">npm install -g wp-dev-sync</p>
+  </div>
+</section>
+
+<!-- ═══ PROBLEM ═══ -->
+<section id="problem">
+  <div class="container">
+    <div class="section-header">cat problem.md</div>
+
+    <div class="window">
+      <div class="window-bar">the-problem.diff</div>
+      <div class="window-body">
+        <div class="problem-grid">
+          <div class="problem-col problem-old">
+            <h3>- The Old Way</h3>
+            <ul>
+              <li>Open FileZilla</li>
+              <li>Navigate to remote dir</li>
+              <li>Upload files manually</li>
+              <li>Refresh browser</li>
+              <li>Repeat 500× a day</li>
+            </ul>
+          </div>
+          <div class="problem-col problem-new">
+            <h3>+ The wp-dev-sync Way</h3>
+            <ul>
+              <li>Run wp-dev-sync watch</li>
+              <li>Edit files in your editor</li>
+              <li>Files sync automatically</li>
+              <li>SSH delta = only changed bytes</li>
+              <li>Done. Go build things.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="problem-footer">
+      Think <code>shopify theme dev</code>, but for WordPress.
+    </p>
+  </div>
+</section>
+
+<!-- ═══ COMMANDS ═══ -->
+<section id="commands">
+  <div class="container">
+    <div class="section-header">wp-dev-sync --help</div>
+
+    <div class="window">
+      <div class="window-bar">wp-dev-sync help</div>
+      <div class="window-body commands-output">
+        <div class="c-title">WP Dev Sync</div>
+        <div class="c-usage">Usage: wp-dev-sync <span>&lt;command&gt;</span></div>
+
+        <div class="cmd-row"><span class="cmd-icon">⟳</span><span class="cmd-name">watch</span><span class="cmd-desc">Watch for changes and auto-sync to remote</span></div>
+        <div class="cmd-row"><span class="cmd-icon">↑</span><span class="cmd-name">push</span><span class="cmd-desc">One-time upload to remote server</span></div>
+        <div class="cmd-row"><span class="cmd-icon">↓</span><span class="cmd-name">pull</span><span class="cmd-desc">One-time download from remote server</span></div>
+        <div class="cmd-row"><span class="cmd-icon">★</span><span class="cmd-name">tunnel</span><span class="cmd-desc">Open public tunnel for client previews</span></div>
+        <div class="cmd-row"><span class="cmd-icon">◆</span><span class="cmd-name">setup</span><span class="cmd-desc">Check dependencies and test connection</span></div>
+        <div class="cmd-row"><span class="cmd-icon">◇</span><span class="cmd-name">init</span><span class="cmd-desc">Create .env file from template</span></div>
+
+        <hr class="commands-divider">
+
+        <div class="commands-quick">
+          <div><span class="step-num">1</span> <span class="step-cmd">wp-dev-sync init</span> <span class="step-comment"># Create .env</span></div>
+          <div><span class="step-num">2</span> <span class="step-cmd">nano .env</span> <span class="step-comment"># Set credentials</span></div>
+          <div><span class="step-num">3</span> <span class="step-cmd">wp-dev-sync setup</span> <span class="step-comment"># Verify</span></div>
+          <div><span class="step-num">4</span> <span class="step-cmd">wp-dev-sync watch</span> <span class="step-comment"># Sync!</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section id="how">
+  <div class="container">
+    <div class="section-header">cat how-it-works.txt</div>
+
+    <div class="window">
+      <div class="window-bar">architecture</div>
+      <div class="window-body">
+        <pre class="flow-ascii">
+  ┌─────────────┐         ┌─────────────┐         ┌─────────────┐
+  │             │         │             │         │             │
+  │  Your       │   SSH   │  wp-dev-    │  rsync  │  Remote     │
+  │  Editor     │ ──────▶ │  sync       │ ──────▶ │  Server     │
+  │             │   FTP   │  (watcher)  │  lftp   │             │
+  │  Save file  │         │  Detects Δ  │         │  Theme live │
+  │             │         │             │         │             │
+  └─────────────┘         └─────────────┘         └─────────────┘
+        │                       │                       │
+    localhost               auto-sync              your-server.com
+        </pre>
+
+        <div class="flow">
+          <div class="flow-step">
+            <span class="flow-icon">📝</span>
+            <div class="flow-label">Edit</div>
+            <div class="flow-desc">Save a .php, .scss,<br>or .ts file locally</div>
+          </div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-step">
+            <span class="flow-icon">👁</span>
+            <div class="flow-label">Detect</div>
+            <div class="flow-desc">File watcher catches<br>the change instantly</div>
+          </div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-step">
+            <span class="flow-icon">⚡</span>
+            <div class="flow-label">Sync</div>
+            <div class="flow-desc">rsync sends only<br>the changed bytes</div>
+          </div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-step">
+            <span class="flow-icon">✔</span>
+            <div class="flow-label">Live</div>
+            <div class="flow-desc">Theme updated<br>on the server</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ LIVE SYNC DEMO ═══ -->
+<section id="demo">
+  <div class="container">
+    <div class="section-header">wp-dev-sync watch --demo</div>
+
+    <div class="terminal" id="sync-demo">
+      <div class="terminal-bar">
+        <span class="terminal-dot r"></span>
+        <span class="terminal-dot y"></span>
+        <span class="terminal-dot g"></span>
+        <span class="terminal-title">wp-dev-sync watch — my-theme</span>
+      </div>
+      <div class="terminal-body" id="sync-body" style="min-height:380px;">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PROTOCOLS ═══ -->
+<section id="protocols">
+  <div class="container">
+    <div class="section-header">diff ssh.md ftp.md</div>
+
+    <div class="proto-grid">
+      <div class="proto-card">
+        <div class="proto-name" style="color:var(--green)">
+          SSH (rsync)
+          <span class="badge" style="color:var(--bg);background:var(--green)">RECOMMENDED</span>
+        </div>
+        <div class="proto-sub">Delta transfer — only changed bytes</div>
+        <ul class="proto-list">
+          <li class="ok">Fast delta sync (~200 bytes per edit)</li>
+          <li class="ok">Encrypted connection</li>
+          <li class="ok">Passwordless with SSH keys</li>
+          <li class="ok">Checksum-based change detection</li>
+        </ul>
+        <div class="proto-install">
+          Install: <code>choco install rsync</code> · <code>brew install rsync</code>
+        </div>
+      </div>
+      <div class="proto-card">
+        <div class="proto-name" style="color:var(--yellow)">
+          FTP (lftp)
+          <span class="badge" style="color:var(--bg);background:var(--yellow)">FALLBACK</span>
+        </div>
+        <div class="proto-sub">Full file mirror — works everywhere</div>
+        <ul class="proto-list">
+          <li class="ok">Universal hosting support</li>
+          <li class="ok">No server setup needed</li>
+          <li class="ok">Works with any cPanel/Plesk</li>
+          <li class="no">Transfers full files, not deltas</li>
+        </ul>
+        <div class="proto-install">
+          Install: <code>choco install lftp</code> · <code>brew install lftp</code>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ WATCH MODE ═══ -->
+<section id="watch">
+  <div class="container">
+    <div class="section-header">cat watch-mode.md</div>
+
+    <div class="window">
+      <div class="window-bar">file watchers</div>
+      <div class="window-body">
+        <table class="watch-table">
+          <thead>
+            <tr>
+              <th>OS</th>
+              <th>WATCHER</th>
+              <th>LATENCY</th>
+              <th>INSTALL</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>macOS</td>
+              <td>fswatch</td>
+              <td style="color:var(--green)">~0.5s</td>
+              <td class="dim">brew install fswatch</td>
+            </tr>
+            <tr>
+              <td>Linux</td>
+              <td>inotifywait</td>
+              <td style="color:var(--green)">~0.5s</td>
+              <td class="dim">apt install inotify-tools</td>
+            </tr>
+            <tr>
+              <td>Windows</td>
+              <td>Polling</td>
+              <td style="color:var(--yellow)">~2s</td>
+              <td class="dim">Built-in (no install)</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="color:var(--gray);font-size:13px;margin-top:8px;">
+          Native watchers are optional. Falls back to polling automatically.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ QUICK START ═══ -->
+<section id="start">
+  <div class="container">
+    <div class="section-header">bash quickstart.sh</div>
+
+    <div class="terminal" id="terminal-demo">
+      <div class="terminal-bar">
+        <span class="terminal-dot r"></span>
+        <span class="terminal-dot y"></span>
+        <span class="terminal-dot g"></span>
+        <span class="terminal-title">bash — quickstart</span>
+      </div>
+      <div class="terminal-body" id="terminal-body">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:32px;">
+      <a href="https://github.com/reandimo/wp-dev-sync" class="btn btn-primary" target="_blank">★ View on GitHub</a>
+      <a href="home.md" class="btn btn-ghost" style="margin-left:12px;">📖 Full Docs</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="container">
+    <pre class="footer-ascii" aria-hidden="true">
+┌──────────────────────────────────────────┐
+│  wp-dev-sync  ·  sync themes like a dev  │
+└──────────────────────────────────────────┘</pre>
+    <div class="footer-links">
+      <a href="https://github.com/reandimo/wp-dev-sync">GitHub</a>
+      <a href="https://www.npmjs.com/package/wp-dev-sync">npm</a>
+      <a href="home.md">Docs</a>
+      <a href="https://github.com/reandimo/wp-dev-sync/issues">Issues</a>
+    </div>
+    <p class="footer-copy">
+      Built by <a href="https://reandimo.dev" target="_blank">Renan Diaz</a> · MIT License · 2026
+    </p>
+  </div>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   Terminal typing animation + scroll fade-ins
+   ═══════════════════════════════════════════════════════════════ */
+
+const lines = [
+  { t: '$ npm install -g wp-dev-sync', c: 'prompt', delay: 0, type: true },
+  { t: 'added 1 package in 2s', c: 'ok', delay: 800 },
+  { t: '', delay: 200 },
+  { t: '$ cd ~/projects/my-wordpress-site', c: 'prompt', delay: 300, type: true },
+  { t: '', delay: 200 },
+  { t: '$ wp-dev-sync init', c: 'prompt', delay: 300, type: true },
+  { t: '✔ Created .env from template', c: 'ok', delay: 400 },
+  { t: '', delay: 200 },
+  { t: '# Edit .env with your server credentials...', c: 'comment', delay: 600 },
+  { t: '', delay: 200 },
+  { t: '$ wp-dev-sync setup', c: 'prompt', delay: 300, type: true },
+  { t: '✔ rsync v3.4.1', c: 'ok', delay: 200 },
+  { t: '✔ ssh', c: 'ok', delay: 200 },
+  { t: '✔ SSH connection successful', c: 'ok', delay: 400 },
+  { t: '', delay: 200 },
+  { t: '$ wp-dev-sync watch', c: 'prompt', delay: 300, type: true },
+  { t: '↑ 14:32:07 Uploading via rsync...', c: 'info', delay: 400 },
+  { t: '    ⬆  [PHP] functions.php', c: 'info', delay: 150 },
+  { t: '    ⬆  [CSS] main.scss', c: 'info', delay: 150 },
+  { t: '    ⬆  [JS ] main.ts', c: 'info', delay: 150 },
+  { t: '✔ 14:32:08 Sync complete', c: 'ok', delay: 300 },
+  { t: '', delay: 200 },
+  { t: '● Watching for changes... (Ctrl+C to stop)', c: 'ok', delay: 200 },
+];
+
+let started = false;
+
+function startTerminal() {
+  if (started) return;
+  started = true;
+
+  const body = document.getElementById('terminal-body');
+  body.innerHTML = '';
+  let total = 0;
+
+  lines.forEach(line => {
+    total += line.delay;
+    setTimeout(() => {
+      const div = document.createElement('div');
+      div.className = 'line ' + (line.c || '');
+
+      if (line.type && line.t.startsWith('$')) {
+        div.textContent = '';
+        body.appendChild(div);
+        let i = 0;
+        const iv = setInterval(() => {
+          div.textContent = line.t.substring(0, i + 1);
+          i++;
+          if (i >= line.t.length) clearInterval(iv);
+        }, 30);
+      } else {
+        div.textContent = line.t;
+        body.appendChild(div);
+      }
+
+      body.scrollTop = body.scrollHeight;
+    }, total);
+  });
+
+  total += 500;
+  setTimeout(() => {
+    const cur = document.createElement('div');
+    cur.className = 'line';
+    cur.innerHTML = '<span class="prompt">$ </span><span class="cursor" style="display:inline-block;width:8px;height:15px;background:var(--green);animation:blink 1s step-end infinite;vertical-align:text-bottom;"></span>';
+    body.appendChild(cur);
+    body.scrollTop = body.scrollHeight;
+  }, total);
+}
+
+// ── Sync demo animation (loops) ─────────────────────────────
+const syncWaves = [
+  // Wave 1: Initial sync
+  [
+    { t: '╭──────────────────────────────────────────────────────────╮', c: 'info' },
+    { t: '│                    WP Dev Sync — Watch                   │', c: 'info' },
+    { t: '╰──────────────────────────────────────────────────────────╯', c: 'info' },
+    { t: '' },
+    { t: '◆ Connection ─────────────────────────────────────────────', c: 'info' },
+    { t: '│ Local:         my-theme', c: '' },
+    { t: '│ Protocol:      ✔ ssh', c: 'ok' },
+    { t: '│ Target:        deploy@staging.mysite.com:/themes/my-theme', c: '' },
+    { t: '│ Delete:        ✔ off', c: 'ok' },
+    { t: '│ Watcher:       fswatch', c: '' },
+    { t: '' },
+    { t: '⟳ Sync Log ───────────────────────────────────────────────', c: 'info' },
+    { t: '⟳ 14:32:05 Initial sync...', c: 'info' },
+    { t: '↑ 14:32:05 Uploading via rsync...', c: 'info' },
+    { t: '    ⬆ [PHP] functions.php', c: 'file-php' },
+    { t: '    ⬆ [PHP] ThemeSetup.php', c: 'file-php' },
+    { t: '    ⬆ [CSS] main.scss', c: 'file-css' },
+    { t: '    ⬆ [CSS] _header.scss', c: 'file-css' },
+    { t: '    ⬆ [JS ] main.ts', c: 'file-js' },
+    { t: '    ⬆ [HTM] index.html', c: 'file-htm' },
+    { t: '    ⬆ [JSN] theme.json', c: 'file-json' },
+    { t: '    sent 12,847 bytes  received 284 bytes', c: 'comment' },
+    { t: '✔ 14:32:06 Sync complete', c: 'ok' },
+    { t: '' },
+    { t: '──────────────────────────────────────────────────────────', c: 'comment' },
+    { t: '● Watching for changes... (Ctrl+C to stop)', c: 'ok' },
+    { t: '──────────────────────────────────────────────────────────', c: 'comment' },
+  ],
+  // Wave 2: Edit header.php
+  [
+    { t: '' },
+    { t: '↑ 14:32:41 Uploading via rsync...', c: 'info' },
+    { t: '    ⬆ [PHP] header.php', c: 'file-php' },
+    { t: '    sent 247 bytes  received 47 bytes', c: 'comment' },
+    { t: '✔ 14:32:41 Sync complete', c: 'ok' },
+  ],
+  // Wave 3: Edit SCSS
+  [
+    { t: '' },
+    { t: '↑ 14:33:12 Uploading via rsync...', c: 'info' },
+    { t: '    ⬆ [CSS] _hero.scss', c: 'file-css' },
+    { t: '    ⬆ [CSS] _variables.scss', c: 'file-css' },
+    { t: '    sent 1,204 bytes  received 86 bytes', c: 'comment' },
+    { t: '✔ 14:33:12 Sync complete', c: 'ok' },
+  ],
+  // Wave 4: Edit TS + JSON
+  [
+    { t: '' },
+    { t: '↑ 14:34:28 Uploading via rsync...', c: 'info' },
+    { t: '    ⬆ [JS ] accordion.ts', c: 'file-js' },
+    { t: '    ⬆ [JSN] block.json', c: 'file-json' },
+    { t: '    sent 3,891 bytes  received 104 bytes', c: 'comment' },
+    { t: '✔ 14:34:29 Sync complete', c: 'ok' },
+  ],
+  // Wave 5: New block
+  [
+    { t: '' },
+    { t: '↑ 14:36:03 Uploading via rsync...', c: 'info' },
+    { t: '    ⬆ [PHP] render.php', c: 'file-php' },
+    { t: '    ⬆ [JSN] block.json', c: 'file-json' },
+    { t: '    ⬆ [CSS] _testimonials.scss', c: 'file-css' },
+    { t: '    sent 5,102 bytes  received 156 bytes', c: 'comment' },
+    { t: '✔ 14:36:04 Sync complete', c: 'ok' },
+  ],
+];
+
+let syncStarted = false;
+
+function startSyncDemo() {
+  if (syncStarted) return;
+  syncStarted = true;
+
+  const body = document.getElementById('sync-body');
+  body.innerHTML = '';
+  let total = 0;
+
+  syncWaves.forEach((wave, waveIdx) => {
+    const baseDelay = waveIdx === 0 ? 60 : 120;
+    const waveGap = waveIdx === 0 ? 0 : 1500;
+    total += waveGap;
+
+    wave.forEach(line => {
+      total += baseDelay;
+      const t = total;
+      setTimeout(() => {
+        const div = document.createElement('div');
+        div.className = 'line ' + (line.c || '');
+        div.textContent = line.t;
+        body.appendChild(div);
+        body.scrollTop = body.scrollHeight;
+      }, t);
+    });
+  });
+}
+
+// Scroll observer
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      if (e.target.id === 'sync-demo') startSyncDemo();
+      if (e.target.id === 'terminal-demo') startTerminal();
+      if (e.target.classList.contains('fade-in')) {
+        e.target.style.animationDelay = (e.target.dataset.delay || '0') + 'ms';
+        e.target.style.animationPlayState = 'running';
+      }
+    }
+  });
+}, { threshold: 0.2 });
+
+const syncEl = document.getElementById('sync-demo');
+if (syncEl) obs.observe(syncEl);
+
+const term = document.getElementById('terminal-demo');
+if (term) obs.observe(term);
+
+document.querySelectorAll('.fade-in').forEach((el, i) => {
+  el.style.animationPlayState = 'paused';
+  el.dataset.delay = String((i % 4) * 100);
+  obs.observe(el);
+});
+</script>
+
+</body>
+</html>
