@@ -1,0 +1,40 @@
+# WP Sync — Wiki
+
+Welcome to the WP Sync documentation. WP Sync is a CLI tool that syncs your local WordPress theme files to a remote server automatically — bringing the same developer experience that Shopify offers with `shopify theme dev` to the WordPress ecosystem.
+
+## What it does
+
+- Watches your local theme directory for file changes
+- Automatically uploads changed files to your remote server via SSH (rsync) or FTP (lftp)
+- Supports one-time push/pull operations for manual syncing
+- Provides a preflight check to verify dependencies and server connectivity
+- Optionally exposes your remote site via public tunnels (Cloudflare/ngrok)
+
+## Why
+
+Developing WordPress themes on remote servers typically means:
+
+1. **FTP clients** — Drag and drop files manually in FileZilla every time you save
+2. **Git-based deploys** — Commit, push, wait for CI/CD, then check the result
+3. **Local environments** — Full Docker/MAMP/XAMPP setups that may not match production
+
+WP Sync eliminates all of that. You edit files locally with your favorite editor, and they appear on your server in seconds. No commits required, no FTP clients, no complex local environments.
+
+## Who it's for
+
+- WordPress theme developers working on remote/staging servers
+- Freelancers deploying to client hosting (cPanel, Plesk, shared hosting)
+- Teams that need fast iteration on staging environments
+- Anyone tired of manual FTP uploads
+
+## Table of Contents
+
+- [Installation](installation.md)
+- [Configuration](configuration.md)
+- [Commands](commands.md)
+- [Protocols](protocols.md)
+- [Watch Mode](watch-mode.md)
+- [Tunnels](tunnels.md)
+- [Architecture](architecture.md)
+- [Troubleshooting](troubleshooting.md)
+- [Examples](examples.md)

@@ -1,0 +1,29 @@
+{
+  "name": "wp-sync",
+  "version": "1.0.0",
+  "description": "CLI for syncing WordPress themes to remote servers via SSH or FTP",
+  "author": "Renan Diaz <https://reandimo.dev>",
+  "license": "MIT",
+  "bin": {
+    "wp-sync": "./bin/wp-sync"
+  },
+  "keywords": [
+    "wordpress",
+    "sync",
+    "rsync",
+    "ftp",
+    "deploy",
+    "theme",
+    "cli"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/reandimo/wp-sync.git"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "commands/",
+    ".env.example"
+  ]
+}
