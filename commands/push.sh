@@ -23,6 +23,9 @@ if [ "$SYNC_DELETE" = "true" ]; then
 else
     ui_table_row "Delete:" "${C_GREEN}off${C_RESET}" "ok"
 fi
+if [ "$SYNCIGNORE_LOADED" = "true" ]; then
+    ui_table_row "Ignore:" ".syncignore" "ok"
+fi
 
 ui_section "Upload" "$CH_ARROW_UP"
 sync_push

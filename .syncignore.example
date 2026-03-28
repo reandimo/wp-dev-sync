@@ -1,0 +1,36 @@
+# ─────────────────────────────────────────────────────
+# .syncignore — Files and directories to exclude from sync
+# One pattern per line. Supports glob patterns.
+# Lines starting with # are comments.
+# ─────────────────────────────────────────────────────
+
+# Version control
+.git
+
+# Dependencies
+node_modules
+vendor
+
+# Environment
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Build artifacts / Vite
+public/hot
+public/.vite
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Source maps
+*.map

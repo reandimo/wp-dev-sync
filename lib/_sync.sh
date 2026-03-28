@@ -8,6 +8,28 @@ REMOTE_PORT="${REMOTE_PORT:-$([ "$SYNC_PROTOCOL" = "ftp" ] && echo 21 || echo 22
 SYNC_EXCLUDE="${SYNC_EXCLUDE:-.git,node_modules,.DS_Store,*.log,.env,public/hot}"
 SYNC_DELETE="${SYNC_DELETE:-false}"
 
+# ── .syncignore support ──────────────────────────────────────
+# Reads patterns from .syncignore (one per line, # for comments).
+# For rsync: uses --exclude-from natively (supports full glob syntax).
+# For lftp: merges patterns into SYNC_EXCLUDE.
+SYNCIGNORE_FILE="$(pwd)/.syncignore"
+SYNCIGNORE_LOADED=false
+
+# Save original env value before merging
+SYNC_EXCLUDE_ENV="$SYNC_EXCLUDE"
+
+if [ -f "$SYNCIGNORE_FILE" ]; then
+    SYNCIGNORE_LOADED=true
+    # For lftp, merge .syncignore patterns into SYNC_EXCLUDE
+    if [ "$SYNC_PROTOCOL" = "ftp" ]; then
+        while IFS= read -r line || [ -n "$line" ]; do
+            line="${line//$'\r'/}"
+            [[ -z "$line" || "$line" == \#* ]] && continue
+            SYNC_EXCLUDE="${SYNC_EXCLUDE},${line}"
+        done < "$SYNCIGNORE_FILE"
+    fi
+fi
+
 # Resolve local path (absolute, no ".." — required for lftp lcd)
 LOCAL_PATH="${LOCAL_PATH:-.}"
 LOCAL_PATH="$(cd "$LOCAL_PATH" 2>/dev/null && pwd)" || {
@@ -49,7 +71,12 @@ _build_rsync_opts() {
     if [ "$SYNC_DELETE" = "true" ]; then
         opts="$opts --delete"
     fi
-    IFS=',' read -ra ITEMS <<< "$SYNC_EXCLUDE"
+    # .syncignore → native rsync --exclude-from
+    if [ "$SYNCIGNORE_LOADED" = "true" ]; then
+        opts="$opts --exclude-from=$SYNCIGNORE_FILE"
+    fi
+    # SYNC_EXCLUDE from .env
+    IFS=',' read -ra ITEMS <<< "$SYNC_EXCLUDE_ENV"
     for item in "${ITEMS[@]}"; do
         opts="$opts --exclude=$item"
     done

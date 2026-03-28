@@ -68,9 +68,19 @@ cmd_init() {
 
     cp "$template" "$target"
     ui_ok "Created ${C_BRIGHT_WHITE}.env${C_RESET} from template"
+
+    # Copy .syncignore if it doesn't exist
+    local ignore_target="$(pwd)/.syncignore"
+    local ignore_template="$WP_SYNC_ROOT/.syncignore.example"
+    if [ ! -f "$ignore_target" ] && [ -f "$ignore_template" ]; then
+        cp "$ignore_template" "$ignore_target"
+        ui_ok "Created ${C_BRIGHT_WHITE}.syncignore${C_RESET} from template"
+    fi
+
     echo ""
     ui_info "Next steps:"
     ui_step "Edit ${C_BRIGHT_WHITE}.env${C_RESET} with your server credentials"
+    ui_step "Edit ${C_BRIGHT_WHITE}.syncignore${C_RESET} to customize excluded files"
     ui_step "Run ${C_ACCENT_BRIGHT}wp-dev-sync setup${C_RESET} to verify"
     echo ""
 }
