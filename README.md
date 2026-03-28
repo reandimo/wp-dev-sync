@@ -1,193 +1,369 @@
-# WP Sync
+<p align="center">
+  <img src="https://img.shields.io/badge/WordPress-Sync-21759b?style=for-the-badge&logo=wordpress&logoColor=white" alt="WP Sync" />
+  <br />
+  <img src="https://img.shields.io/badge/version-1.0.0-blue?style=flat-square" alt="Version" />
+  <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" />
+  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey?style=flat-square" alt="Platform" />
+  <img src="https://img.shields.io/badge/protocols-SSH%20%7C%20FTP-orange?style=flat-square" alt="Protocols" />
+</p>
 
-CLI for syncing WordPress themes to remote servers — the same workflow Shopify developers get with `shopify theme dev`, but for WordPress.
+<p align="center">
+  <b>CLI for syncing WordPress themes to remote servers.</b><br/>
+  The same workflow Shopify devs get with <code>shopify theme dev</code>, but for WordPress.
+</p>
 
-No more FTP clients, no more manual uploads. Save a file locally and it's on your server in seconds.
+<p align="center">
+  <a href="#-install">Install</a> ·
+  <a href="#-quick-start">Quick Start</a> ·
+  <a href="#-commands">Commands</a> ·
+  <a href="#%EF%B8%8F-configuration">Configuration</a> ·
+  <a href="docs/home.md">Wiki</a>
+</p>
 
-## Install
+---
+
+## The Problem
+
+```
+😩 The Old Way                          ✨ The WP Sync Way
+─────────────────────                   ─────────────────────
+1. Edit theme file locally              1. Edit theme file locally
+2. Open FileZilla                       2. That's it. It's already
+3. Navigate to remote dir                  on your server.
+4. Upload file manually
+5. Refresh browser
+6. Repeat 500 times a day
+```
+
+**No more FTP clients. No more manual uploads.** Save a file locally and it's on your server in seconds.
+
+---
+
+## 📦 Install
 
 ```bash
-# Global install
 npm install -g wp-sync
-
-# Or use npx
-npx wp-sync <command>
 ```
 
-**Requirements:** bash (Git Bash on Windows), and either `rsync` (SSH) or `lftp` (FTP).
-
-## Quick Start
+<details>
+<summary><b>Other install methods</b></summary>
 
 ```bash
-# 1. Go to your WordPress project
-cd /path/to/my-wordpress-site
+# Use without installing
+npx wp-sync <command>
 
-# 2. Create .env config
-wp-sync init
+# Manual install (clone + link)
+git clone https://github.com/reandimo/wp-sync.git
+cd wp-sync && npm link
+```
+</details>
 
-# 3. Edit .env with your server credentials
-#    Set LOCAL_PATH, REMOTE_PATH, REMOTE_USER, REMOTE_HOST, etc.
+> **Requirements:** Bash (Git Bash on Windows) + `rsync` (SSH) or `lftp` (FTP)
 
-# 4. Verify dependencies and connection
-wp-sync setup
+---
 
-# 5. Start watching and syncing!
-wp-sync watch
+## 🚀 Quick Start
+
+```bash
+cd /path/to/my-wordpress-site     # 1. Go to your project
+
+wp-sync init                      # 2. Creates .env config file
+
+nano .env                         # 3. Set your server credentials
+
+wp-sync setup                     # 4. Verify everything works
+
+wp-sync watch                     # 5. Start syncing! 🎉
 ```
 
-## Commands
+That's it. Every file you save now appears on your server automatically.
 
-| Command | Description |
-|---------|-------------|
-| `wp-sync watch` | Watch for changes + auto-sync (Ctrl+C to stop) |
-| `wp-sync push` | One-time push to remote |
-| `wp-sync pull` | One-time pull from remote |
-| `wp-sync tunnel` | Open public tunnel to remote site |
-| `wp-sync setup` | Check dependencies and test connection |
-| `wp-sync init` | Create `.env` file from template |
-| `wp-sync help` | Show help |
+---
 
-## Configuration
+## 📋 Commands
+
+```
+╭──────────────────────────────────────────────────────╮
+│                                                      │
+│   ⟳  watch     Watch + auto-sync on file changes    │
+│   ↑  push      One-time upload to remote             │
+│   ↓  pull      One-time download from remote         │
+│   ★  tunnel    Public URL for client previews        │
+│   ◆  setup     Preflight check (deps + connection)   │
+│   ◇  init      Create .env from template             │
+│                                                      │
+╰──────────────────────────────────────────────────────╯
+```
+
+---
+
+## ⚙️ Configuration
 
 All config lives in a `.env` file in your project root:
 
 ```bash
-# Local directory to sync (relative or absolute)
-LOCAL_PATH=./wp-content/themes/my-theme
+# ── What to sync ─────────────────────────────────────
+LOCAL_PATH=./wp-content/themes/my-theme        # Local dir
+REMOTE_PATH=/var/www/html/wp-content/themes/my-theme  # Remote dir
 
-# Remote directory on the server
-REMOTE_PATH=/var/www/html/wp-content/themes/my-theme
-
-# Protocol: ssh or ftp
-SYNC_PROTOCOL=ssh
-
-# Server connection
-REMOTE_USER=username
+# ── Connection ───────────────────────────────────────
+SYNC_PROTOCOL=ssh          # ssh or ftp
+REMOTE_USER=deploy
 REMOTE_HOST=myserver.com
-REMOTE_PORT=22              # 22 for SSH, 21 for FTP
+REMOTE_PORT=22             # 22 for SSH, 21 for FTP
+REMOTE_PASSWORD=           # FTP only
 
-# FTP only
-REMOTE_PASSWORD=mypassword
-
-# Sync behavior
-SYNC_EXCLUDE=.git,node_modules,.DS_Store,*.log,.env,public/hot
-SYNC_DELETE=false           # true = mirror local state exactly
+# ── Behavior ─────────────────────────────────────────
+SYNC_EXCLUDE=.git,node_modules,.DS_Store,*.log,.env
+SYNC_DELETE=false          # true = mirror exact state
 ```
 
 ### Example Setups
 
-**WordPress classic (cPanel/shared hosting):**
+<details>
+<summary><b>🏠 WordPress Classic (cPanel / Shared Hosting)</b></summary>
+
 ```bash
 LOCAL_PATH=./wp-content/themes/my-theme
 REMOTE_PATH=/home/user/public_html/wp-content/themes/my-theme
 SYNC_PROTOCOL=ftp
+REMOTE_USER=cpanel-user@domain.com
+REMOTE_HOST=ftp.domain.com
 REMOTE_PORT=21
+REMOTE_PASSWORD=your-ftp-password
 ```
+</details>
 
-**WordPress Bedrock:**
+<details>
+<summary><b>🪨 WordPress Bedrock</b></summary>
+
 ```bash
-LOCAL_PATH=./app/web/app/themes/my-theme
+LOCAL_PATH=./web/app/themes/my-theme
 REMOTE_PATH=/var/www/mysite/current/web/app/themes/my-theme
 SYNC_PROTOCOL=ssh
+REMOTE_USER=deploy
+REMOTE_HOST=myserver.com
 REMOTE_PORT=22
 ```
+</details>
 
-**Full wp-content sync:**
+<details>
+<summary><b>🖥️ VPS (DigitalOcean, Linode, Vultr)</b></summary>
+
 ```bash
-LOCAL_PATH=./wp-content
-REMOTE_PATH=/var/www/html/wp-content
+LOCAL_PATH=./wp-content/themes/my-theme
+REMOTE_PATH=/var/www/html/wp-content/themes/my-theme
 SYNC_PROTOCOL=ssh
+REMOTE_USER=root
+REMOTE_HOST=203.0.113.10
+REMOTE_PORT=22
+SYNC_DELETE=true
+```
+</details>
+
+<details>
+<summary><b>⚡ WP Engine</b></summary>
+
+```bash
+LOCAL_PATH=./wp-content/themes/my-theme
+REMOTE_PATH=/sites/mysite/wp-content/themes/my-theme
+SYNC_PROTOCOL=ssh
+REMOTE_USER=mysite
+REMOTE_HOST=mysite.ssh.wpengine.net
+REMOTE_PORT=22
+```
+</details>
+
+<details>
+<summary><b>🔌 Plugin Development</b></summary>
+
+```bash
+LOCAL_PATH=./wp-content/plugins/my-plugin
+REMOTE_PATH=/var/www/html/wp-content/plugins/my-plugin
+SYNC_PROTOCOL=ssh
+REMOTE_USER=deploy
+REMOTE_HOST=myserver.com
+REMOTE_PORT=22
+SYNC_EXCLUDE=.git,node_modules,tests,vendor
+```
+</details>
+
+---
+
+## 🔄 Protocols
+
+```
+┌──────────────────────┬──────────────────────┐
+│  SSH (rsync)         │  FTP (lftp)          │
+│  ══════════          │  ═════════           │
+│  ✔ Delta transfer    │  ✔ Universal access  │
+│  ✔ Encrypted         │  ✔ No server setup   │
+│  ✔ Passwordless      │  ✔ Works everywhere  │
+│  ✔ ~200 bytes/edit   │  ✘ Full file upload  │
+│                      │  ✘ Unencrypted       │
+│  ★ Recommended       │  ○ Fallback option   │
+└──────────────────────┴──────────────────────┘
 ```
 
-## Protocols
-
-### SSH (rsync) — Recommended
-
-Fast delta sync over SSH. Only changed bytes are transferred.
+<details>
+<summary><b>Install rsync (SSH)</b></summary>
 
 ```bash
-# Install rsync
 choco install rsync          # Windows
-brew install rsync           # macOS (usually pre-installed)
+brew install rsync           # macOS
 sudo apt install rsync       # Linux
 ```
 
-**SSH key setup:**
+**SSH key setup (one-time):**
 ```bash
 ssh-keygen -t ed25519
 ssh-copy-id -p 22 user@myserver.com
 ```
+</details>
 
-### FTP (lftp)
-
-Mirror sync over FTP. Works with any hosting that provides FTP access.
+<details>
+<summary><b>Install lftp (FTP)</b></summary>
 
 ```bash
-# Install lftp
 choco install lftp           # Windows
 brew install lftp            # macOS
 sudo apt install lftp        # Linux
 ```
-
-## Watch Mode
-
-`wp-sync watch` starts a file watcher that syncs on every change:
-
-| OS | Watcher | Latency |
-|----|---------|---------|
-| macOS | fswatch | ~0.5s |
-| Linux | inotifywait | ~0.5s |
-| Windows | Polling | ~2s |
-
-## SYNC_DELETE
-
-| Value | Behavior |
-|-------|----------|
-| `false` (default) | Only uploads new/changed files. Never deletes remote files. |
-| `true` | Mirrors local state exactly. Deletes remote files not present locally. |
-
-## Tunnels
-
-Expose the remote server through a public URL for client previews:
-
-```bash
-# In .env
-TUNNEL_TOOL=cloudflared      # or: ngrok
-TUNNEL_DOMAIN=mysite.com
-```
-
-```bash
-# Install
-choco install cloudflared    # or: choco install ngrok
-```
-
-## Troubleshooting
-
-### rsync: command not found (Windows)
-The CLI automatically adds common Chocolatey/Scoop paths. If it still fails:
-```bash
-export PATH="/c/ProgramData/chocolatey/bin:$PATH"
-```
-
-### SSH: Connection refused
-- Verify SSH is enabled on your server
-- Check the port — some hosts use 2222, 7822, etc.
-- The SSH hostname may differ from FTP (`ssh.host.com` vs `ftp.host.com`)
-
-### FTP: Login incorrect
-- Verify credentials in `.env`
-- Some hosts require the full email as username
-- Check if your IP needs to be whitelisted
-
-### Sync is slow
-- SSH (rsync) is significantly faster than FTP — switch if possible
-- Exclude large directories: `SYNC_EXCLUDE=.git,node_modules,public/fonts`
-- On Windows, polling checks every 2s — this is normal
-
-## Not just WordPress
-
-While wp-sync is designed for WordPress theme development, it works with any directory you need to sync to a remote server. Just set `LOCAL_PATH` and `REMOTE_PATH` to whatever you need.
+</details>
 
 ---
 
-*By [Renan Diaz](https://reandimo.dev)*
+## 👀 Watch Mode
+
+`wp-sync watch` monitors your files and syncs on every save:
+
+```
+┌───────────┬──────────────┬───────────┐
+│ OS        │ Watcher      │ Latency   │
+├───────────┼──────────────┼───────────┤
+│ macOS     │ fswatch      │ ~0.5s     │
+│ Linux     │ inotifywait  │ ~0.5s     │
+│ Windows   │ Polling      │ ~2s       │
+└───────────┴──────────────┴───────────┘
+```
+
+**Pro tip:** Pair with Vite HMR for the ultimate WordPress dev experience:
+
+```bash
+# Terminal 1                    # Terminal 2
+npm run dev                     wp-sync watch
+# Vite handles CSS/JS HMR      # WP Sync handles PHP uploads
+```
+
+---
+
+## 🚇 Tunnels
+
+Share your staging site with clients via a public URL:
+
+```bash
+# .env
+TUNNEL_TOOL=cloudflared      # or: ngrok
+TUNNEL_DOMAIN=staging.mysite.com
+```
+
+```bash
+wp-sync tunnel
+# → https://random-words.trycloudflare.com
+```
+
+---
+
+## 🔥 SYNC_DELETE
+
+| Value | What happens | Safety |
+|:------|:-------------|:------:|
+| `false` | Only uploads new/changed files. Never deletes remotely. | ✅ Safe |
+| `true` | Mirrors local state exactly. Remote-only files get deleted. | ⚠️ Careful |
+
+---
+
+## 🔧 Troubleshooting
+
+<details>
+<summary><b>rsync: command not found (Windows)</b></summary>
+
+The CLI auto-adds Chocolatey/Scoop paths. If it still fails:
+```bash
+export PATH="/c/ProgramData/chocolatey/bin:$PATH"
+```
+</details>
+
+<details>
+<summary><b>SSH: Connection refused</b></summary>
+
+- Check SSH is enabled on your server
+- Try alternative ports: `2222`, `7822`, `18765`
+- SSH hostname may differ from FTP (`ssh.host.com` vs `ftp.host.com`)
+</details>
+
+<details>
+<summary><b>FTP: Login incorrect</b></summary>
+
+- Some hosts require full email as username (`user@domain.com`)
+- Check IP whitelisting in your hosting panel
+- Test with FileZilla first to isolate the issue
+</details>
+
+<details>
+<summary><b>Sync is slow</b></summary>
+
+- Switch from FTP to SSH if possible (10x faster)
+- Exclude large dirs: `SYNC_EXCLUDE=.git,node_modules,vendor,public/fonts`
+- Windows polling (2s) is normal behavior
+</details>
+
+---
+
+## 🏗️ Architecture
+
+```
+wp-sync/
+├── bin/wp-sync              # CLI entry point
+├── lib/
+│   ├── _env.sh              # .env loader + Windows PATH fix
+│   ├── _ui.sh               # Terminal UI (colors, banners, spinners)
+│   └── _sync.sh             # Core sync engine (rsync + lftp)
+├── commands/
+│   ├── watch.sh             # File watcher + auto-sync
+│   ├── push.sh              # One-time upload
+│   ├── pull.sh              # One-time download
+│   ├── tunnel.sh            # Cloudflare / ngrok tunnel
+│   └── setup.sh             # Preflight dependency check
+└── docs/                    # Full wiki documentation
+```
+
+---
+
+## 💡 Not just WordPress
+
+While wp-sync is built for WordPress theme development, it works with **any directory** you need to sync remotely. Just set `LOCAL_PATH` and `REMOTE_PATH` to whatever you need.
+
+```bash
+# Sync a React app
+LOCAL_PATH=./build
+REMOTE_PATH=/var/www/html/myapp
+
+# Sync a Jekyll site
+LOCAL_PATH=./_site
+REMOTE_PATH=/var/www/html/blog
+```
+
+---
+
+<p align="center">
+  <a href="docs/home.md"><b>📖 Full Documentation</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/reandimo/wp-sync/issues"><b>🐛 Report Bug</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/reandimo/wp-sync/issues"><b>💡 Request Feature</b></a>
+</p>
+
+<p align="center">
+  <sub>Built by <a href="https://reandimo.dev">Renan Diaz</a></sub>
+</p>
