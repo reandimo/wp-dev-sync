@@ -301,9 +301,6 @@ sync_delete_remote() {
         local output
         output=$(lftp -u "$REMOTE_USER","$REMOTE_PASSWORD" -p "$REMOTE_PORT" "$REMOTE_HOST" -e "$rm_cmds" 2>&1) || true
 
-        # Debug: save raw output
-        echo "$output" > /tmp/wp-sync-lftp-rm.log 2>/dev/null || true
-
         # Report results per file by checking for errors in output
         for f in "${files[@]}"; do
             if echo "$output" | grep -q "$(printf '%s' "$f").*\(No such file\|Access failed\|Permission denied\)"; then

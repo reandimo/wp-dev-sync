@@ -255,7 +255,24 @@ sudo apt install lftp        # Linux
 
 ## 👀 Watch Mode
 
-`wp-dev-sync watch` monitors your files and syncs on every save:
+`wp-dev-sync watch` starts with a smart reconciliation that compares local and remote files before syncing:
+
+```
+╭── info ──────────────────────────────────────────────────╮
+│                                                          │
+│  The files listed below differ between the local and     │
+│  remote versions. What would you like to do?             │
+│    ● assets/style.css                                    │
+│    ● templates/page.json                                 │
+│                                                          │
+╰──────────────────────────────────────────────────────────╯
+
+?  Reconciliation Strategy:
+▸  Keep the local version
+   Keep the remote version
+```
+
+Each category gets its own prompt: **local-only** (upload or delete), **remote-only** (download or delete), and **differing** (keep local or keep remote). Then syncs with a gradient progress bar and starts watching for changes.
 
 ```
 ┌───────────┬──────────────┬───────────┐

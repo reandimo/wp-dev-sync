@@ -4,8 +4,10 @@ Welcome to the WP Dev Sync documentation. WP Dev Sync is a CLI tool that syncs y
 
 ## What it does
 
+- **Smart reconciliation** — compares local and remote files before syncing, shows exactly which files differ, and lets you choose what to do per category (local-only, remote-only, differing)
 - Watches your local theme directory for file changes
 - Automatically uploads changed files to your remote server via SSH (rsync) or FTP (lftp)
+- **Gradient progress bar** — tracks file-by-file progress during initial sync
 - Supports one-time push/pull operations for manual syncing
 - Provides a preflight check to verify dependencies and server connectivity
 - Optionally exposes your remote site via public tunnels (Cloudflare/ngrok)

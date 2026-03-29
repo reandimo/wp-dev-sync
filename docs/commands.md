@@ -43,10 +43,17 @@ wp-dev-sync watch
 
 **What it does:**
 
-1. Performs an initial full sync (push)
-2. Starts watching `LOCAL_PATH` for file changes
-3. On every change, runs a sync push
-4. Continues until you press `Ctrl+C`
+1. Compares local and remote files (dry-run diff)
+2. Shows smart reconciliation prompts for each category:
+   - **Local-only files** — upload to remote or delete locally
+   - **Remote-only files** — download to local or delete from remote
+   - **Differing files** — keep local version or keep remote version
+3. Syncs chosen files with a gradient progress bar
+4. Starts watching `LOCAL_PATH` for file changes
+5. On every change, runs a sync push
+6. Continues until you press `Ctrl+C`
+
+If all files are already in sync, the reconciliation step is skipped.
 
 The watcher selection is automatic based on your OS:
 

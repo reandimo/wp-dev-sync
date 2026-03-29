@@ -764,27 +764,27 @@ footer {
 
         <div class="flow">
           <div class="flow-step">
-            <span class="flow-icon">📝</span>
-            <div class="flow-label">Edit</div>
-            <div class="flow-desc">Save a .php, .scss,<br>or .ts file locally</div>
+            <span class="flow-icon">🔍</span>
+            <div class="flow-label">Compare</div>
+            <div class="flow-desc">Dry-run diff finds<br>local vs remote changes</div>
           </div>
           <span class="flow-arrow">→</span>
           <div class="flow-step">
-            <span class="flow-icon">👁</span>
-            <div class="flow-label">Detect</div>
-            <div class="flow-desc">File watcher catches<br>the change instantly</div>
+            <span class="flow-icon">🤝</span>
+            <div class="flow-label">Reconcile</div>
+            <div class="flow-desc">Choose per category:<br>upload, download, delete</div>
           </div>
           <span class="flow-arrow">→</span>
           <div class="flow-step">
             <span class="flow-icon">⚡</span>
             <div class="flow-label">Sync</div>
-            <div class="flow-desc">rsync sends only<br>the changed bytes</div>
+            <div class="flow-desc">Gradient progress bar<br>tracks each file</div>
           </div>
           <span class="flow-arrow">→</span>
           <div class="flow-step">
-            <span class="flow-icon">✔</span>
-            <div class="flow-label">Live</div>
-            <div class="flow-desc">Theme updated<br>on the server</div>
+            <span class="flow-icon">👁</span>
+            <div class="flow-label">Watch</div>
+            <div class="flow-desc">Auto-sync on every<br>file save</div>
           </div>
         </div>
       </div>
@@ -1003,11 +1003,13 @@ const lines = [
   { t: '✔ SSH connection successful', c: 'ok', delay: 400 },
   { t: '', delay: 200 },
   { t: '$ wp-dev-sync watch', c: 'prompt', delay: 300, type: true },
-  { t: '↑ 14:32:07 Uploading via rsync...', c: 'info', delay: 400 },
-  { t: '    ⬆  [PHP] functions.php', c: 'info', delay: 150 },
-  { t: '    ⬆  [CSS] main.scss', c: 'info', delay: 150 },
-  { t: '    ⬆  [JS ] main.ts', c: 'info', delay: 150 },
-  { t: '✔ 14:32:08 Sync complete', c: 'ok', delay: 300 },
+  { t: '╭── info ─────────────────────────────────────────╮', c: 'info', delay: 400 },
+  { t: '│  Files that differ between local and remote:    │', c: 'info', delay: 100 },
+  { t: '│    ● functions.php                              │', c: 'info', delay: 100 },
+  { t: '│    ● main.scss                                  │', c: 'info', delay: 100 },
+  { t: '╰─────────────────────────────────────────────────╯', c: 'info', delay: 100 },
+  { t: '✔  Keep the local version', c: 'ok', delay: 300 },
+  { t: '✔ 14:32:06 Sync complete — 2 files uploaded', c: 'ok', delay: 300 },
   { t: '', delay: 200 },
   { t: '● Watching for changes... (Ctrl+C to stop)', c: 'ok', delay: 200 },
 ];
@@ -1058,7 +1060,7 @@ function startTerminal() {
 
 // ── Sync demo animation (loops) ─────────────────────────────
 const syncWaves = [
-  // Wave 1: Initial sync
+  // Wave 1: Smart reconciliation + initial sync
   [
     { t: '╭──────────────────────────────────────────────────────────╮', c: 'info' },
     { t: '│                    WP Dev Sync — Watch                   │', c: 'info' },
@@ -1072,17 +1074,20 @@ const syncWaves = [
     { t: '│ Watcher:       fswatch', c: '' },
     { t: '' },
     { t: '⟳ Sync Log ───────────────────────────────────────────────', c: 'info' },
-    { t: '⟳ 14:32:05 Initial sync...', c: 'info' },
-    { t: '↑ 14:32:05 Uploading via rsync...', c: 'info' },
-    { t: '    ⬆ [PHP] functions.php', c: 'file-php' },
-    { t: '    ⬆ [PHP] ThemeSetup.php', c: 'file-php' },
-    { t: '    ⬆ [CSS] main.scss', c: 'file-css' },
-    { t: '    ⬆ [CSS] _header.scss', c: 'file-css' },
-    { t: '    ⬆ [JS ] main.ts', c: 'file-js' },
-    { t: '    ⬆ [HTM] index.html', c: 'file-htm' },
-    { t: '    ⬆ [JSN] theme.json', c: 'file-json' },
-    { t: '    sent 12,847 bytes  received 284 bytes', c: 'comment' },
-    { t: '✔ 14:32:06 Sync complete', c: 'ok' },
+    { t: '' },
+    { t: '╭── info ──────────────────────────────────────────────────╮', c: 'info' },
+    { t: '│                                                          │', c: 'info' },
+    { t: '│  The files listed below differ between the local and     │', c: 'info' },
+    { t: '│  remote versions. What would you like to do?             │', c: 'info' },
+    { t: '│    ● assets/style.css                                    │', c: 'info' },
+    { t: '│    ● templates/page.json                                 │', c: 'info' },
+    { t: '│    ● config/settings.json                                │', c: 'info' },
+    { t: '│                                                          │', c: 'info' },
+    { t: '╰──────────────────────────────────────────────────────────╯', c: 'info' },
+    { t: '' },
+    { t: '✔  Keep the local version', c: 'ok' },
+    { t: '  ████████████████████████████░░  87% ↑ config/settings.json', c: 'info' },
+    { t: '✔ 14:32:06 Sync complete — 3 files uploaded', c: 'ok' },
     { t: '' },
     { t: '──────────────────────────────────────────────────────────', c: 'comment' },
     { t: '● Watching for changes... (Ctrl+C to stop)', c: 'ok' },

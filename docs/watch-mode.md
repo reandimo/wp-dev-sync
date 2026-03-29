@@ -6,13 +6,75 @@
 
 ```
 ┌──────────────────────────────────────────────────┐
-│  wp-dev-sync watch                                   │
+│  wp-dev-sync watch                               │
 │                                                  │
-│  1. Initial sync (full push)                     │
-│  2. Start file watcher on LOCAL_PATH             │
-│  3. On file change → sync_push()                 │
-│  4. Repeat until Ctrl+C                          │
+│  1. Compare local ↔ remote (dry-run diff)        │
+│  2. Smart reconciliation (per-category prompts)  │
+│  3. Sync with gradient progress bar              │
+│  4. Start file watcher on LOCAL_PATH             │
+│  5. On file change → sync_push()                 │
+│  6. Repeat until Ctrl+C                          │
 └──────────────────────────────────────────────────┘
+```
+
+## Smart Reconciliation
+
+Before syncing, `watch` compares local and remote files using a dry-run diff. Files are classified into three categories, each shown in a Shopify CLI-style info box with an interactive prompt:
+
+### Files only present locally
+
+```
+╭── info ─────────────────────────────────────────────────────╮
+│                                                             │
+│  The files listed below are only present locally.           │
+│  What would you like to do?                                 │
+│    ● config/markets.json                                    │
+│                                                             │
+╰─────────────────────────────────────────────────────────────╯
+
+?  Reconciliation Strategy:
+▸  Upload local files to the remote server
+   Delete local files
+```
+
+### Files only present on remote
+
+```
+╭── info ─────────────────────────────────────────────────────╮
+│                                                             │
+│  The files listed below are only present on the remote      │
+│  server. What would you like to do?                         │
+│    ● .editorconfig                                          │
+│    ● README.md                                              │
+│                                                             │
+╰─────────────────────────────────────────────────────────────╯
+
+?  Reconciliation Strategy:
+▸  Download remote files to local directory
+   Delete remote files
+```
+
+### Files that differ between local and remote
+
+```
+╭── info ─────────────────────────────────────────────────────╮
+│                                                             │
+│  The files listed below differ between the local and        │
+│  remote versions. What would you like to do?                │
+│    ● assets/style.css                                       │
+│    ● templates/page.json                                    │
+│                                                             │
+╰─────────────────────────────────────────────────────────────╯
+
+?  Reconciliation Strategy:
+▸  Keep the local version
+   Keep the remote version
+```
+
+If all files are already in sync, the reconciliation step is skipped entirely:
+
+```
+✔ Local and remote are in sync — no differences found.
 ```
 
 ## File watchers
@@ -95,9 +157,19 @@ If your build tool outputs to a directory like `public/` or `dist/`, exclude it 
 SYNC_EXCLUDE=.git,node_modules,.DS_Store,*.log,.env,public/hot,public/.vite
 ```
 
+### Gradient progress bar
+
+During reconciliation, the initial sync displays a gradient progress bar (blue → cyan → green → yellow) that fills as each file is transferred:
+
+```
+  ████████████████░░░░░░░░░░░░░░  53% ↑ templates/page.json
+```
+
+The progress bar uses the known file count from the diff comparison, so it accurately tracks completion.
+
 ### Large initial syncs
 
-The first time you run `wp-dev-sync watch`, the initial sync transfers all files. If your theme is large, this may take a moment. Subsequent syncs are incremental and much faster.
+The first time you run `wp-dev-sync watch`, the reconciliation step compares all files. If your theme is large, the dry-run comparison may take a moment. Subsequent syncs during watch mode are incremental and much faster.
 
 ### Ctrl+C handling
 
