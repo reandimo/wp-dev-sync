@@ -88,6 +88,8 @@ That's it. Every file you save now appears on your server automatically.
 │   ⟳  watch     Watch + auto-sync on file changes    │
 │   ↑  push      One-time upload to remote             │
 │   ↓  pull      One-time download from remote         │
+│   ◇  diff      Compare local vs remote (dry-run)    │
+│   ◈  env       Manage multiple environments          │
 │   ★  tunnel    Public URL for client previews        │
 │   ◆  setup     Preflight check (deps + connection)   │
 │   ◇  init      Create .env from template             │
@@ -311,6 +313,54 @@ wp-dev-sync tunnel
 
 ---
 
+## 🔍 Diff
+
+Compare local and remote without syncing — like `git status` for your server:
+
+```bash
+wp-dev-sync diff
+```
+
+```
+  Local only (1 files) — present locally, missing on remote
+    +  index.php
+
+  Remote only (3 files) — present on remote, missing locally
+    -  .editorconfig
+    -  README.md
+    -  setup.js
+
+  Modified (2 files) — differ between local and remote
+    ~  assets/style.css
+    ~  templates/page.json
+
+  1 local only  3 remote only  2 modified
+```
+
+---
+
+## 🌍 Environments
+
+Manage multiple server configs without editing `.env` manually:
+
+```bash
+wp-dev-sync env create staging        # Create from current .env
+wp-dev-sync env create production     # Create another
+
+# Edit each: .env.staging, .env.production
+
+wp-dev-sync env switch staging        # Activate staging
+wp-dev-sync env switch                # Interactive picker
+wp-dev-sync env list                  # Show all environments
+```
+
+```
+  ▸  staging          ssh@deploy@staging.mysite.com:/themes/my-theme
+     production       ftp@user@ftp.mysite.com:/public_html/themes/my-theme
+```
+
+---
+
 ## 🔥 SYNC_DELETE
 
 | Value | What happens | Safety |
@@ -370,6 +420,8 @@ wp-dev-sync/
 │   ├── watch.sh             # File watcher + auto-sync
 │   ├── push.sh              # One-time upload
 │   ├── pull.sh              # One-time download
+│   ├── diff.sh              # Compare local vs remote
+│   ├── env.sh               # Multi-environment manager
 │   ├── tunnel.sh            # Cloudflare / ngrok tunnel
 │   └── setup.sh             # Preflight dependency check
 └── docs/                    # Full wiki documentation

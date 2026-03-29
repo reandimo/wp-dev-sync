@@ -14,6 +14,8 @@ wp-dev-sync/
 │   ├── watch.sh             # File watcher + auto-sync
 │   ├── push.sh              # One-time upload
 │   ├── pull.sh              # One-time download
+│   ├── diff.sh              # Compare local vs remote
+│   ├── env.sh               # Multi-environment manager
 │   ├── tunnel.sh            # Public tunnel
 │   └── setup.sh             # Preflight check
 ├── docs/                    # Wiki documentation

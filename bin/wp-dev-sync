@@ -31,8 +31,10 @@ show_help() {
     printf "    %s%s%s  %-12s%s %s%s%s\n" "$C_ACCENT" "$C_BOLD" "$CH_SYNC" "watch" "$C_RESET" "$C_DIM" "Watch for changes and auto-sync to remote" "$C_RESET"
     printf "    %s%s%s  %-12s%s %s%s%s\n" "$C_CYAN" "$C_BOLD" "$CH_ARROW_UP" "push" "$C_RESET" "$C_DIM" "One-time push to remote server" "$C_RESET"
     printf "    %s%s%s  %-12s%s %s%s%s\n" "$C_MAGENTA" "$C_BOLD" "$CH_ARROW_DOWN" "pull" "$C_RESET" "$C_DIM" "One-time pull from remote server" "$C_RESET"
+    printf "    %s%s%s  %-12s%s %s%s%s\n" "$C_BRIGHT_YELLOW" "$C_BOLD" "$CH_FILE" "diff" "$C_RESET" "$C_DIM" "Compare local vs remote without syncing" "$C_RESET"
     printf "    %s%s%s  %-12s%s %s%s%s\n" "$C_BRIGHT_GREEN" "$C_BOLD" "$CH_STAR" "tunnel" "$C_RESET" "$C_DIM" "Open public tunnel to remote site" "$C_RESET"
     printf "    %s%s%s  %-12s%s %s%s%s\n" "$C_YELLOW" "$C_BOLD" "$CH_LOCK" "setup" "$C_RESET" "$C_DIM" "Check dependencies and test connection" "$C_RESET"
+    printf "    %s%s%s  %-12s%s %s%s%s\n" "$C_BRIGHT_MAGENTA" "$C_BOLD" "$CH_FOLDER" "env" "$C_RESET" "$C_DIM" "Manage multiple environments" "$C_RESET"
     printf "    %s%s%s  %-12s%s %s%s%s\n" "$C_BRIGHT_BLUE" "$C_BOLD" "$CH_FILE" "init" "$C_RESET" "$C_DIM" "Create .env file from template" "$C_RESET"
     echo ""
 
@@ -102,8 +104,10 @@ case "$COMMAND" in
     watch)    source "$WP_SYNC_COMMANDS/watch.sh" ;;
     push)     source "$WP_SYNC_COMMANDS/push.sh" ;;
     pull)     source "$WP_SYNC_COMMANDS/pull.sh" ;;
+    diff)     source "$WP_SYNC_COMMANDS/diff.sh" ;;
     tunnel)   source "$WP_SYNC_COMMANDS/tunnel.sh" ;;
     setup)    source "$WP_SYNC_COMMANDS/setup.sh" ;;
+    env)      source "$WP_SYNC_COMMANDS/env.sh" ;;
     init)     cmd_init ;;
     help|-h|--help)    show_help ;;
     version|-v|--version)   cmd_version ;;

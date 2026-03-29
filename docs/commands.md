@@ -105,6 +105,83 @@ wp-dev-sync pull
 
 ---
 
+## wp-dev-sync diff
+
+Compares local and remote files without syncing anything. Like `git status` for your server.
+
+```bash
+wp-dev-sync diff
+```
+
+**What it shows:**
+
+Files are classified into three categories with color-coded output:
+
+- **`+` Local only** (green) — files present locally but missing on the remote
+- **`-` Remote only** (red) — files present on the remote but missing locally
+- **`~` Modified** (yellow) — files that exist on both sides but differ
+
+**Output includes:**
+- File lists per category with counts
+- Summary line with totals
+- Suggested next action (`push` or `watch`)
+
+**Use cases:**
+- Quick check before pushing to see what would change
+- Verifying a deployment was complete
+- Spotting files that were modified directly on the server
+- Auditing differences after someone else uploaded via FTP
+
+---
+
+## wp-dev-sync env
+
+Manages multiple server environments (staging, production, etc.) so you can switch between them instantly.
+
+```bash
+wp-dev-sync env <subcommand>
+```
+
+**Subcommands:**
+
+| Subcommand | Aliases | Description |
+|------------|---------|-------------|
+| `list` | `ls` | Show all environments with active indicator |
+| `switch [name]` | `sw`, `use` | Switch to an environment (interactive if no name) |
+| `create <name>` | `new`, `add` | Create environment from current `.env` |
+| `delete <name>` | `rm`, `remove` | Delete an environment |
+| `current` | | Print the active environment name |
+| `help` | | Show usage guide |
+
+**How it works:**
+
+Environments are stored as `.env.<name>` files (e.g., `.env.staging`, `.env.production`). Switching copies the selected file to `.env`, so all other commands work unchanged.
+
+```bash
+# Create environments
+wp-dev-sync env create staging
+wp-dev-sync env create production
+
+# Edit each file with server credentials
+nano .env.staging
+nano .env.production
+
+# Switch between them
+wp-dev-sync env switch staging        # by name
+wp-dev-sync env switch                # interactive arrow-key picker
+
+# Check which is active
+wp-dev-sync env current
+```
+
+**Use cases:**
+- Separate staging and production configs
+- Client projects with multiple hosting environments
+- Testing against different servers without manual `.env` edits
+- Team members sharing environment configs via git (excluding passwords)
+
+---
+
 ## wp-dev-sync tunnel
 
 Opens a public tunnel to your remote site for previewing.
