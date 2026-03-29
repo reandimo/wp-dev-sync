@@ -28,6 +28,7 @@ show_help() {
         "$C_ACCENT_BRIGHT" "$C_RESET"
 
     printf "  %s%sCommands:%s\n\n" "$C_ACCENT_BRIGHT" "$C_BOLD" "$C_RESET"
+    printf "    %s%s%s  %-12s%s %s%s%s\n" "$C_BRIGHT_GREEN" "$C_BOLD" "$CH_BULLET" "dev" "$C_RESET" "$C_DIM" "Local dev server with HMR proxy" "$C_RESET"
     printf "    %s%s%s  %-12s%s %s%s%s\n" "$C_ACCENT" "$C_BOLD" "$CH_SYNC" "watch" "$C_RESET" "$C_DIM" "Watch for changes and auto-sync to remote" "$C_RESET"
     printf "    %s%s%s  %-12s%s %s%s%s\n" "$C_CYAN" "$C_BOLD" "$CH_ARROW_UP" "push" "$C_RESET" "$C_DIM" "One-time push to remote server" "$C_RESET"
     printf "    %s%s%s  %-12s%s %s%s%s\n" "$C_MAGENTA" "$C_BOLD" "$CH_ARROW_DOWN" "pull" "$C_RESET" "$C_DIM" "One-time pull from remote server" "$C_RESET"
@@ -101,6 +102,7 @@ cmd_version() {
 COMMAND="${1:-help}"
 
 case "$COMMAND" in
+    dev)      source "$WP_SYNC_COMMANDS/dev.sh" ;;
     watch)    source "$WP_SYNC_COMMANDS/watch.sh" ;;
     push)     source "$WP_SYNC_COMMANDS/push.sh" ;;
     pull)     source "$WP_SYNC_COMMANDS/pull.sh" ;;
