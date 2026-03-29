@@ -96,6 +96,236 @@ _is_tracked_file() {
     [[ "$line" == *".jpg"* ]] || [[ "$line" == *".webp"* ]]
 }
 
+# ── Dry-run diff (Shopify CLI style reconciliation) ─────────
+# Populates arrays: DIFF_LOCAL_ONLY, DIFF_REMOTE_ONLY, DIFF_CHANGED
+# These represent files only present locally, only remotely, and differing.
+
+sync_diff() {
+    DIFF_LOCAL_ONLY=()
+    DIFF_REMOTE_ONLY=()
+    DIFF_CHANGED=()
+
+    if [ "$SYNC_PROTOCOL" = "ftp" ]; then
+        _sync_diff_ftp
+    else
+        _sync_diff_rsync
+    fi
+}
+
+_sync_diff_rsync() {
+    local rsync_opts
+    rsync_opts=$(_build_rsync_opts)
+    local ssh_cmd="ssh -p ${REMOTE_PORT}"
+
+    # Dry-run local→remote with itemize-changes
+    local push_output
+    # shellcheck disable=SC2086
+    push_output=$(rsync $rsync_opts --dry-run --itemize-changes -e "$ssh_cmd" \
+        "$LOCAL_PATH/" \
+        "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/" 2>&1) || true
+
+    # Dry-run remote→local with itemize-changes
+    local pull_output
+    local pull_rsync_opts="-avz --compress --checksum"
+    IFS=',' read -ra ITEMS <<< "$SYNC_EXCLUDE_ENV"
+    for item in "${ITEMS[@]}"; do
+        pull_rsync_opts="$pull_rsync_opts --exclude=$item"
+    done
+    if [ "$SYNCIGNORE_LOADED" = "true" ]; then
+        pull_rsync_opts="$pull_rsync_opts --exclude-from=$SYNCIGNORE_FILE"
+    fi
+    # shellcheck disable=SC2086
+    pull_output=$(rsync $pull_rsync_opts --dry-run --itemize-changes -e "$ssh_cmd" \
+        "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/" \
+        "$LOCAL_PATH/" 2>&1) || true
+
+    # Parse itemize-changes output into associative arrays.
+    # Format: >f+++++++++ path (new file) or >f.st...... path (changed).
+    # The regex requires the 11-char flag field (>fXXXXXXXXX) to avoid
+    # capturing rsync noise like summary lines, SSH banners, etc.
+    _parse_itemize() {
+        local -n _target_map=$1
+        local _output="$2"
+        while IFS= read -r line; do
+            line="${line//$'\r'/}"
+            [ -z "$line" ] && continue
+            # Strict match: >f followed by exactly 9 flag chars, then space(s), then path
+            if [[ "$line" =~ ^\>f(.{9})[[:space:]]+(.+)$ ]]; then
+                local flags="${BASH_REMATCH[1]}"
+                local path="${BASH_REMATCH[2]}"
+                # Skip paths that are clearly not files
+                [[ "$path" == "."* && ! "$path" == *"/"* && ! "$path" == *"."*"."* ]] && continue
+                if [[ "$flags" == "+++++++++" ]]; then
+                    _target_map["$path"]="new"
+                else
+                    _target_map["$path"]="changed"
+                fi
+            fi
+        done <<< "$_output"
+    }
+
+    local -A push_files=()
+    _parse_itemize push_files "$push_output"
+
+    local -A pull_files=()
+    _parse_itemize pull_files "$pull_output"
+
+    # Classify files
+    for file in "${!push_files[@]}"; do
+        if [[ "${push_files[$file]}" == "new" ]] && [[ -z "${pull_files[$file]:-}" ]]; then
+            DIFF_LOCAL_ONLY+=("$file")
+        elif [[ -n "${pull_files[$file]:-}" ]]; then
+            DIFF_CHANGED+=("$file")
+        else
+            DIFF_CHANGED+=("$file")
+        fi
+    done
+
+    for file in "${!pull_files[@]}"; do
+        if [[ "${pull_files[$file]}" == "new" ]] && [[ -z "${push_files[$file]:-}" ]]; then
+            DIFF_REMOTE_ONLY+=("$file")
+        elif [[ -z "${push_files[$file]:-}" ]]; then
+            DIFF_CHANGED+=("$file")
+        fi
+    done
+
+    # Sort arrays (guard against empty — printf with no args emits a blank line)
+    if [ ${#DIFF_LOCAL_ONLY[@]} -gt 0 ]; then
+        IFS=$'\n' DIFF_LOCAL_ONLY=($(printf '%s\n' "${DIFF_LOCAL_ONLY[@]}" | sort)); unset IFS
+    fi
+    if [ ${#DIFF_REMOTE_ONLY[@]} -gt 0 ]; then
+        IFS=$'\n' DIFF_REMOTE_ONLY=($(printf '%s\n' "${DIFF_REMOTE_ONLY[@]}" | sort)); unset IFS
+    fi
+    if [ ${#DIFF_CHANGED[@]} -gt 0 ]; then
+        IFS=$'\n' DIFF_CHANGED=($(printf '%s\n' "${DIFF_CHANGED[@]}" | sort)); unset IFS
+    fi
+}
+
+_sync_diff_ftp() {
+    local excludes
+    excludes=$(_build_lftp_excludes)
+
+    # Dry-run push (local→remote)
+    local push_output
+    # shellcheck disable=SC2086
+    push_output=$(lftp -u "$REMOTE_USER","$REMOTE_PASSWORD" -p "$REMOTE_PORT" "$REMOTE_HOST" -e "
+        set ssl:verify-certificate no;
+        lcd "$LFTP_LOCAL_PATH";
+        cd $REMOTE_PATH;
+        mirror --reverse --no-perms --dry-run --verbose=1 $excludes;
+        quit
+    " 2>&1) || true
+
+    # Dry-run pull (remote→local)
+    local pull_output
+    # shellcheck disable=SC2086
+    pull_output=$(lftp -u "$REMOTE_USER","$REMOTE_PASSWORD" -p "$REMOTE_PORT" "$REMOTE_HOST" -e "
+        set ssl:verify-certificate no;
+        lcd "$LFTP_LOCAL_PATH";
+        cd $REMOTE_PATH;
+        mirror --no-perms --dry-run --verbose=1 $excludes;
+        quit
+    " 2>&1) || true
+
+    # Parse lftp dry-run --verbose=1 output.
+    # Actual format (confirmed from live output):
+    #   "Transferring file `filename'"        ← file to transfer
+    #   "get -O /dest ftp://..."              ← command detail (skip)
+    #   "lcd ok, ..." / "cd ok, ..."          ← connection info (skip)
+    #   "Total: ..." / "New: ..." / "To be…"  ← summary (skip)
+    _parse_lftp_diff() {
+        local -n _target=$1
+        local _output="$2"
+        while IFS= read -r line; do
+            line="${line//$'\r'/}"
+            [[ -z "$line" ]] && continue
+            # Match: Transferring file `some/path/file.ext'
+            if [[ "$line" =~ ^Transferring\ file\ \`(.+)\'$ ]]; then
+                local fpath="${BASH_REMATCH[1]}"
+                fpath="${fpath#./}"
+                [[ -n "$fpath" ]] && _target["$fpath"]="changed"
+            fi
+        done <<< "$_output"
+    }
+
+    local -A push_files=()
+    _parse_lftp_diff push_files "$push_output"
+
+    local -A pull_files=()
+    _parse_lftp_diff pull_files "$pull_output"
+
+    # Classify
+    for file in "${!push_files[@]}"; do
+        if [[ -z "${pull_files[$file]:-}" ]]; then
+            DIFF_LOCAL_ONLY+=("$file")
+        else
+            DIFF_CHANGED+=("$file")
+        fi
+    done
+
+    for file in "${!pull_files[@]}"; do
+        if [[ -z "${push_files[$file]:-}" ]]; then
+            DIFF_REMOTE_ONLY+=("$file")
+        fi
+    done
+
+    # Sort arrays (guard against empty — printf with no args emits a blank line)
+    if [ ${#DIFF_LOCAL_ONLY[@]} -gt 0 ]; then
+        IFS=$'\n' DIFF_LOCAL_ONLY=($(printf '%s\n' "${DIFF_LOCAL_ONLY[@]}" | sort)); unset IFS
+    fi
+    if [ ${#DIFF_REMOTE_ONLY[@]} -gt 0 ]; then
+        IFS=$'\n' DIFF_REMOTE_ONLY=($(printf '%s\n' "${DIFF_REMOTE_ONLY[@]}" | sort)); unset IFS
+    fi
+    if [ ${#DIFF_CHANGED[@]} -gt 0 ]; then
+        IFS=$'\n' DIFF_CHANGED=($(printf '%s\n' "${DIFF_CHANGED[@]}" | sort)); unset IFS
+    fi
+}
+
+# ── Delete remote files ──────────────────────────────────────
+# Usage: sync_delete_remote file1 file2 ...
+# Deletes specific files from the remote server.
+
+sync_delete_remote() {
+    local files=("$@")
+    [ ${#files[@]} -eq 0 ] && return
+
+    if [ "$SYNC_PROTOCOL" = "ftp" ]; then
+        # Build rm commands, one per file
+        local rm_cmds="set ssl:verify-certificate no; cd $REMOTE_PATH;"
+        for f in "${files[@]}"; do
+            rm_cmds="${rm_cmds} rm -- ${f};"
+        done
+        rm_cmds="${rm_cmds} quit"
+
+        # Run all deletions in a single lftp session
+        local output
+        output=$(lftp -u "$REMOTE_USER","$REMOTE_PASSWORD" -p "$REMOTE_PORT" "$REMOTE_HOST" -e "$rm_cmds" 2>&1) || true
+
+        # Debug: save raw output
+        echo "$output" > /tmp/wp-sync-lftp-rm.log 2>/dev/null || true
+
+        # Report results per file by checking for errors in output
+        for f in "${files[@]}"; do
+            if echo "$output" | grep -q "$(printf '%s' "$f").*\(No such file\|Access failed\|Permission denied\)"; then
+                local err_line
+                err_line=$(echo "$output" | grep "$f" | head -1)
+                ui_status "error" "Failed to delete remote: $f"
+                [ -n "$err_line" ] && ui_detail "$err_line"
+            else
+                ui_status "ok" "Deleted remote: $f"
+            fi
+        done
+    else
+        local ssh_cmd="ssh -p ${REMOTE_PORT} ${REMOTE_USER}@${REMOTE_HOST}"
+        for f in "${files[@]}"; do
+            # shellcheck disable=SC2029
+            $ssh_cmd "rm -f \"${REMOTE_PATH}/${f}\"" 2>&1 && \
+                ui_status "ok" "Deleted remote: $f" || \
+                ui_status "error" "Failed to delete remote: $f"
+        done
+    fi
+}
+
 # ── Sync functions ───────────────────────────────────────────
 
 sync_push() {
@@ -153,6 +383,123 @@ sync_push() {
     fi
 
     ui_status "ok" "Sync complete"
+}
+
+# ── Progress-aware sync (used during reconciliation) ────────
+# These use the known file count from sync_diff to show a gradient bar.
+# Usage: sync_push_progress <expected_file_count>
+
+sync_push_progress() {
+    local total="${1:-0}"
+    local file_count=0
+
+    if [ "$total" -le 0 ]; then
+        sync_push
+        return
+    fi
+
+    if [ "$SYNC_PROTOCOL" = "ftp" ]; then
+        local delete_flag=""
+        [ "$SYNC_DELETE" = "true" ] && delete_flag="--delete"
+        local excludes
+        excludes=$(_build_lftp_excludes)
+
+        ui_progress_gradient 0 "$total" "Uploading via FTP..."
+        # shellcheck disable=SC2086
+        lftp -u "$REMOTE_USER","$REMOTE_PASSWORD" -p "$REMOTE_PORT" "$REMOTE_HOST" -e "
+            set ssl:verify-certificate no;
+            lcd "$LFTP_LOCAL_PATH";
+            cd $REMOTE_PATH;
+            mirror --reverse --no-perms --verbose=1 $delete_flag $excludes;
+            quit
+        " 2>&1 | while IFS= read -r line; do
+            line="${line//$'\r'/}"
+            [ -z "$line" ] && continue
+            if _is_tracked_file "$line"; then
+                file_count=$((file_count + 1))
+                local filename="${line##*/}"
+                filename="${filename%% *}"
+                ui_progress_gradient "$file_count" "$total" "$CH_UPLOAD $filename"
+            fi
+        done
+    else
+        local rsync_opts
+        rsync_opts=$(_build_rsync_opts)
+        local ssh_cmd="ssh -p ${REMOTE_PORT}"
+
+        ui_progress_gradient 0 "$total" "Uploading via rsync..."
+        # shellcheck disable=SC2086
+        rsync $rsync_opts -e "$ssh_cmd" \
+            "$LOCAL_PATH/" \
+            "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/" 2>&1 | while IFS= read -r line; do
+            line="${line//$'\r'/}"
+            [ -z "$line" ] && continue
+            if [[ "$line" == *"/"* ]] && [[ "$line" != *"sending"* ]] && [[ "$line" != *"sent "* ]] && [[ "$line" != *"total size"* ]] && [[ "$line" != *"building"* ]]; then
+                file_count=$((file_count + 1))
+                ui_progress_gradient "$file_count" "$total" "$CH_UPLOAD $line"
+            fi
+        done
+    fi
+
+    ui_progress_gradient_done
+    ui_status "ok" "Sync complete — ${C_BRIGHT_WHITE}${total}${C_RESET} files uploaded"
+}
+
+sync_pull_progress() {
+    local total="${1:-0}"
+    local file_count=0
+
+    if [ "$total" -le 0 ]; then
+        sync_pull
+        return
+    fi
+
+    if [ "$SYNC_PROTOCOL" = "ftp" ]; then
+        local excludes
+        excludes=$(_build_lftp_excludes)
+
+        ui_progress_gradient 0 "$total" "Downloading via FTP..."
+        # shellcheck disable=SC2086
+        lftp -u "$REMOTE_USER","$REMOTE_PASSWORD" -p "$REMOTE_PORT" "$REMOTE_HOST" -e "
+            set ssl:verify-certificate no;
+            lcd "$LFTP_LOCAL_PATH";
+            cd $REMOTE_PATH;
+            mirror --no-perms --verbose=1 $excludes;
+            quit
+        " 2>&1 | while IFS= read -r line; do
+            line="${line//$'\r'/}"
+            [ -z "$line" ] && continue
+            if _is_tracked_file "$line"; then
+                file_count=$((file_count + 1))
+                local filename="${line##*/}"
+                filename="${filename%% *}"
+                ui_progress_gradient "$file_count" "$total" "$CH_DOWNLOAD $filename"
+            fi
+        done
+    else
+        local rsync_opts="-avz --compress --checksum"
+        IFS=',' read -ra ITEMS <<< "$SYNC_EXCLUDE"
+        for item in "${ITEMS[@]}"; do
+            rsync_opts="$rsync_opts --exclude=$item"
+        done
+        local ssh_cmd="ssh -p ${REMOTE_PORT}"
+
+        ui_progress_gradient 0 "$total" "Downloading via rsync..."
+        # shellcheck disable=SC2086
+        rsync $rsync_opts -e "$ssh_cmd" \
+            "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/" \
+            "$LOCAL_PATH/" 2>&1 | while IFS= read -r line; do
+            line="${line//$'\r'/}"
+            [ -z "$line" ] && continue
+            if [[ "$line" == *"/"* ]] && [[ "$line" != *"receiving"* ]] && [[ "$line" != *"sent "* ]] && [[ "$line" != *"total size"* ]]; then
+                file_count=$((file_count + 1))
+                ui_progress_gradient "$file_count" "$total" "$CH_DOWNLOAD $line"
+            fi
+        done
+    fi
+
+    ui_progress_gradient_done
+    ui_status "ok" "Pull complete — ${C_BRIGHT_WHITE}${total}${C_RESET} files downloaded"
 }
 
 sync_pull() {

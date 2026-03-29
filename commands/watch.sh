@@ -41,9 +41,73 @@ ui_table_row "Watcher:" "$WATCHER" "$([ "$WATCHER" != "polling" ] && echo "ok")"
 
 ui_section "Sync Log" "$CH_SYNC"
 
-# ── Initial sync ─────────────────────────────────────────────
-ui_status "sync" "Initial sync..."
-sync_push
+# ── Reconciliation strategy ──────────────────────────────────
+ui_spinner_start "Comparing local and remote files..."
+sync_diff
+ui_spinner_stop
+
+if [ ${#DIFF_LOCAL_ONLY[@]} -eq 0 ] && [ ${#DIFF_REMOTE_ONLY[@]} -eq 0 ] && [ ${#DIFF_CHANGED[@]} -eq 0 ]; then
+    ui_ok "Local and remote are in sync — no differences found."
+else
+    # ── Files only present locally ───────────────────────────
+    if [ ${#DIFF_LOCAL_ONLY[@]} -gt 0 ]; then
+        ui_info_box "The files listed below are only present locally. What would you like to do?" "${DIFF_LOCAL_ONLY[@]}"
+        echo ""
+        ui_select "Reconciliation Strategy:" \
+            "Upload local files to the remote server" \
+            "Delete local files"
+
+        case "$UI_SELECT_RESULT" in
+            0)
+                sync_push_progress ${#DIFF_LOCAL_ONLY[@]}
+                ;;
+            1)
+                ui_status "sync" "Deleting local-only files..."
+                for f in "${DIFF_LOCAL_ONLY[@]}"; do
+                    rm -f "$LOCAL_PATH/$f"
+                    ui_status "ok" "Deleted $f"
+                done
+                ;;
+        esac
+    fi
+
+    # ── Files only present on remote ─────────────────────────
+    if [ ${#DIFF_REMOTE_ONLY[@]} -gt 0 ]; then
+        ui_info_box "The files listed below are only present on the remote server. What would you like to do?" "${DIFF_REMOTE_ONLY[@]}"
+        echo ""
+        ui_select "Reconciliation Strategy:" \
+            "Download remote files to local directory" \
+            "Delete remote files"
+
+        case "$UI_SELECT_RESULT" in
+            0)
+                sync_pull_progress ${#DIFF_REMOTE_ONLY[@]}
+                ;;
+            1)
+                ui_status "sync" "Deleting remote-only files..."
+                sync_delete_remote "${DIFF_REMOTE_ONLY[@]}"
+                ;;
+        esac
+    fi
+
+    # ── Files that differ between local and remote ───────────
+    if [ ${#DIFF_CHANGED[@]} -gt 0 ]; then
+        ui_info_box "The files listed below differ between the local and remote versions. What would you like to do?" "${DIFF_CHANGED[@]}"
+        echo ""
+        ui_select "Reconciliation Strategy:" \
+            "Keep the local version" \
+            "Keep the remote version"
+
+        case "$UI_SELECT_RESULT" in
+            0)
+                sync_push_progress ${#DIFF_CHANGED[@]}
+                ;;
+            1)
+                sync_pull_progress ${#DIFF_CHANGED[@]}
+                ;;
+        esac
+    fi
+fi
 
 echo ""
 ui_divider

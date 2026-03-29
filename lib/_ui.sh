@@ -255,6 +255,71 @@ ui_warn_box() {
     echo ""
 }
 
+# ── Info box with file list (Shopify CLI style) ─────────────
+# Usage: ui_info_box "message text" file1 file2 file3 ...
+ui_info_box() {
+    local msg="$1"
+    shift
+    local files=("$@")
+    local w=$(_term_width)
+    local inner=$((w - 6))
+
+    echo ""
+    # Top border: ╭─ info ───...───╮
+    printf "  %s%s%s %s%s%s%s\n" \
+        "$C_BRIGHT_BLUE" "$C_BOLD" "$CH_CORNER_TL" "$(_repeat_char "$CH_DASH" 2)" " info " "$(_repeat_char "$CH_DASH" $((inner - 8)))" "$CH_CORNER_TR$C_RESET"
+
+    # Empty line
+    printf "  %s%s%s%s%*s%s%s%s\n" \
+        "$C_BRIGHT_BLUE" "$C_BOLD" "$CH_PIPE" "$C_RESET" "$inner" "" "$C_BRIGHT_BLUE$C_BOLD" "$CH_PIPE" "$C_RESET"
+
+    # Message text (word-wrapped)
+    local line_max=$((inner - 2))
+    local words=()
+    read -ra words <<< "$msg"
+    local current_line=""
+    for word in "${words[@]}"; do
+        if [ -z "$current_line" ]; then
+            current_line="$word"
+        elif [ $(( ${#current_line} + 1 + ${#word} )) -le "$line_max" ]; then
+            current_line="$current_line $word"
+        else
+            local pad=$(( inner - ${#current_line} - 2 ))
+            printf "  %s%s%s%s  %s%*s%s%s%s\n" \
+                "$C_BRIGHT_BLUE" "$C_BOLD" "$CH_PIPE" "$C_RESET" \
+                "$current_line" "$pad" "" \
+                "$C_BRIGHT_BLUE$C_BOLD" "$CH_PIPE" "$C_RESET"
+            current_line="$word"
+        fi
+    done
+    if [ -n "$current_line" ]; then
+        local pad=$(( inner - ${#current_line} - 2 ))
+        printf "  %s%s%s%s  %s%*s%s%s%s\n" \
+            "$C_BRIGHT_BLUE" "$C_BOLD" "$CH_PIPE" "$C_RESET" \
+            "$current_line" "$pad" "" \
+            "$C_BRIGHT_BLUE$C_BOLD" "$CH_PIPE" "$C_RESET"
+    fi
+
+    # File list (bulleted)
+    for file in "${files[@]}"; do
+        local entry="  $CH_BULLET $file"
+        local pad=$(( inner - ${#entry} - 2 ))
+        [ "$pad" -lt 0 ] && pad=0
+        printf "  %s%s%s%s  %s%s%s%s%*s%s%s%s\n" \
+            "$C_BRIGHT_BLUE" "$C_BOLD" "$CH_PIPE" "$C_RESET" \
+            "  " "$C_BRIGHT_WHITE" "$CH_BULLET" " $file" "$pad" "" \
+            "$C_BRIGHT_BLUE$C_BOLD" "$CH_PIPE" "$C_RESET"
+    done
+
+    # Empty line
+    printf "  %s%s%s%s%*s%s%s%s\n" \
+        "$C_BRIGHT_BLUE" "$C_BOLD" "$CH_PIPE" "$C_RESET" "$inner" "" "$C_BRIGHT_BLUE$C_BOLD" "$CH_PIPE" "$C_RESET"
+
+    # Bottom border
+    printf "  %s%s%s%s%s\n" \
+        "$C_BRIGHT_BLUE" "$C_BOLD" "$CH_CORNER_BL" "$(_repeat_char "$CH_DASH" $((inner + 1)))" "$CH_CORNER_BR$C_RESET"
+}
+
 # ── Dividers ─────────────────────────────────────────────────
 
 ui_divider() {
@@ -365,6 +430,74 @@ ui_progress_done() {
     printf "\r\033[K"
 }
 
+# ── Gradient progress bar ───────────────────────────────────
+# Each filled block gets a color from a blue→cyan→green→yellow gradient.
+# Usage: ui_progress_gradient <current> <total> ["label"]
+
+# Gradient palette (16 steps: blue → cyan → green → yellow)
+_GRADIENT_COLORS=(
+    $'\033[38;5;27m'   # blue
+    $'\033[38;5;33m'
+    $'\033[38;5;39m'
+    $'\033[38;5;44m'   # cyan
+    $'\033[38;5;43m'
+    $'\033[38;5;49m'
+    $'\033[38;5;48m'
+    $'\033[38;5;42m'   # green
+    $'\033[38;5;41m'
+    $'\033[38;5;77m'
+    $'\033[38;5;118m'
+    $'\033[38;5;154m'  # lime
+    $'\033[38;5;190m'
+    $'\033[38;5;220m'
+    $'\033[38;5;226m'  # yellow
+    $'\033[38;5;228m'  # bright yellow
+)
+
+ui_progress_gradient() {
+    local current="$1"
+    local total="$2"
+    local label="${3:-}"
+    local bar_width=30
+    [ "$total" -le 0 ] && total=1
+    local filled=$(( current * bar_width / total ))
+    [ "$filled" -gt "$bar_width" ] && filled=$bar_width
+    local empty=$(( bar_width - filled ))
+    local pct=$(( current * 100 / total ))
+    [ "$pct" -gt 100 ] && pct=100
+
+    local gradient_len=${#_GRADIENT_COLORS[@]}
+
+    # Build the gradient bar character by character
+    local bar=""
+    for (( i=0; i<filled; i++ )); do
+        local ci=$(( i * gradient_len / bar_width ))
+        [ "$ci" -ge "$gradient_len" ] && ci=$((gradient_len - 1))
+        bar="${bar}${_GRADIENT_COLORS[$ci]}█"
+    done
+
+    # Unfilled portion
+    local empty_bar=""
+    [ "$empty" -gt 0 ] && empty_bar="$(_repeat_char "░" "$empty")"
+
+    if [ -n "$label" ]; then
+        printf "\r  %s%s%s%s%s %s%s%3d%%%s %s%s%s" \
+            "$C_BOLD" "$bar" "$C_RESET" \
+            "$C_DIM" "$empty_bar" \
+            "$C_RESET" "$C_BRIGHT_WHITE" "$pct" "$C_RESET" \
+            "$C_DIM" "$label" "$C_RESET"
+    else
+        printf "\r  %s%s%s%s%s %s%s%3d%%%s" \
+            "$C_BOLD" "$bar" "$C_RESET" \
+            "$C_DIM" "$empty_bar" \
+            "$C_RESET" "$C_BRIGHT_WHITE" "$pct" "$C_RESET"
+    fi
+}
+
+ui_progress_gradient_done() {
+    printf "\r\033[K"
+}
+
 # ── Timestamp ────────────────────────────────────────────────
 
 ui_timestamp() {
@@ -443,6 +576,79 @@ ui_status() {
                 "$msg"
             ;;
     esac
+}
+
+# ── Interactive select ──────────────────────────────────────
+
+# Arrow-key selector. Sets UI_SELECT_RESULT to the chosen index (0-based).
+# Usage: ui_select "Prompt text" "Option 1" "Option 2" "Option 3"
+ui_select() {
+    local prompt="$1"
+    shift
+    local options=("$@")
+    local count=${#options[@]}
+    local selected=0
+
+    # Print prompt
+    printf "\n  %s%s?%s  %s%s%s\n\n" \
+        "$C_ACCENT_BRIGHT" "$C_BOLD" "$C_RESET" \
+        "$C_BRIGHT_WHITE" "$C_BOLD$prompt" "$C_RESET"
+
+    # Hide cursor
+    printf "\033[?25l"
+
+    # Draw options
+    _ui_select_draw() {
+        for i in "${!options[@]}"; do
+            if [ "$i" -eq "$selected" ]; then
+                printf "  %s%s%s  %s%s%s\n" \
+                    "$C_ACCENT_BRIGHT" "$C_BOLD$CH_ARROW_R" "$C_RESET" \
+                    "$C_BRIGHT_WHITE$C_BOLD" "${options[$i]}" "$C_RESET"
+            else
+                printf "     %s%s%s\n" \
+                    "$C_DIM" "${options[$i]}" "$C_RESET"
+            fi
+        done
+    }
+
+    _ui_select_draw
+
+    # Read input
+    while true; do
+        IFS= read -rsn1 key
+        if [[ "$key" == $'\x1b' ]]; then
+            read -rsn2 seq
+            case "$seq" in
+                '[A') # Up
+                    selected=$(( (selected - 1 + count) % count ))
+                    ;;
+                '[B') # Down
+                    selected=$(( (selected + 1) % count ))
+                    ;;
+            esac
+            # Redraw: move cursor up by $count lines and overwrite
+            printf "\033[%dA" "$count"
+            _ui_select_draw
+        elif [[ "$key" == "" ]]; then
+            # Enter pressed
+            break
+        fi
+    done
+
+    # Show cursor
+    printf "\033[?25h"
+
+    # Clear the options and reprint the selected one
+    printf "\033[%dA" "$count"
+    for (( i=0; i<count; i++ )); do
+        printf "\033[2K\n"
+    done
+    printf "\033[%dA" "$count"
+    printf "  %s%s%s  %s%s%s\n" \
+        "$C_GREEN" "$C_BOLD$CH_CHECK" "$C_RESET" \
+        "$C_BRIGHT_WHITE" "${options[$selected]}" "$C_RESET"
+
+    UI_SELECT_RESULT=$selected
 }
 
 # ── OS Detection ─────────────────────────────────────────────
