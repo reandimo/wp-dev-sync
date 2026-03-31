@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/WordPress-Dev%20Sync-21759b?style=for-the-badge&logo=wordpress&logoColor=white" alt="WP Dev Sync" />
   <br />
-  <img src="https://img.shields.io/badge/version-1.0.0-blue?style=flat-square" alt="Version" />
+  <img src="https://img.shields.io/badge/version-1.1.1-blue?style=flat-square" alt="Version" />
   <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" />
   <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey?style=flat-square" alt="Platform" />
   <img src="https://img.shields.io/badge/protocols-SSH%20%7C%20FTP-orange?style=flat-square" alt="Protocols" />
