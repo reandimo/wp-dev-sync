@@ -31,7 +31,7 @@ wp-dev-sync/
 The CLI entry point resolves its own real path (following symlinks from `npm link` or `npm install -g`), then dispatches to the appropriate command.
 
 ```
-User runs: wp-dev-sync push
+User runs: npx wp-dev-sync push
                 │
                 ▼
         bin/wp-dev-sync

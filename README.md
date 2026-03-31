@@ -49,9 +49,6 @@ npm install -g wp-dev-sync
 <summary><b>Other install methods</b></summary>
 
 ```bash
-# Use without installing
-npx wp-dev-sync <command>
-
 # Manual install (clone + link)
 git clone https://github.com/reandimo/wp-dev-sync.git
 cd wp-dev-sync && npm link
@@ -67,13 +64,13 @@ cd wp-dev-sync && npm link
 ```bash
 cd /path/to/my-wordpress-site     # 1. Go to your project
 
-wp-dev-sync init                      # 2. Creates .env config file
+npx wp-dev-sync init                  # 2. Creates .env config file
 
 nano .env                         # 3. Set your server credentials
 
-wp-dev-sync setup                     # 4. Verify everything works
+npx wp-dev-sync setup                 # 4. Verify everything works
 
-wp-dev-sync watch                     # 5. Start syncing! 🎉
+npx wp-dev-sync watch                 # 5. Start syncing! 🎉
 ```
 
 That's it. Every file you save now appears on your server automatically.
@@ -122,7 +119,7 @@ SYNC_DELETE=false          # true = mirror exact state
 
 ### .syncignore
 
-For more control, create a `.syncignore` file in your project root (or run `wp-dev-sync init`). One pattern per line, like `.gitignore`:
+For more control, create a `.syncignore` file in your project root (or run `npx wp-dev-sync init`). One pattern per line, like `.gitignore`:
 
 ```bash
 # .syncignore
@@ -257,7 +254,7 @@ sudo apt install lftp        # Linux
 
 ## 👀 Watch Mode
 
-`wp-dev-sync watch` starts with a smart reconciliation that compares local and remote files before syncing:
+`npx wp-dev-sync watch` starts with a smart reconciliation that compares local and remote files before syncing:
 
 ```
 ╭── info ──────────────────────────────────────────────────╮
@@ -290,7 +287,7 @@ Each category gets its own prompt: **local-only** (upload or delete), **remote-o
 
 ```bash
 # Terminal 1                    # Terminal 2
-npm run dev                     wp-dev-sync watch
+npm run dev                     npx wp-dev-sync watch
 # Vite handles CSS/JS HMR      # WP Dev Sync handles PHP uploads
 ```
 
@@ -307,7 +304,7 @@ TUNNEL_DOMAIN=staging.mysite.com
 ```
 
 ```bash
-wp-dev-sync tunnel
+npx wp-dev-sync tunnel
 # → https://random-words.trycloudflare.com
 ```
 
@@ -318,7 +315,7 @@ wp-dev-sync tunnel
 Compare local and remote without syncing — like `git status` for your server:
 
 ```bash
-wp-dev-sync diff
+npx wp-dev-sync diff
 ```
 
 ```
@@ -344,14 +341,14 @@ wp-dev-sync diff
 Manage multiple server configs without editing `.env` manually:
 
 ```bash
-wp-dev-sync env create staging        # Create from current .env
-wp-dev-sync env create production     # Create another
+npx wp-dev-sync env create staging        # Create from current .env
+npx wp-dev-sync env create production     # Create another
 
 # Edit each: .env.staging, .env.production
 
-wp-dev-sync env switch staging        # Activate staging
-wp-dev-sync env switch                # Interactive picker
-wp-dev-sync env list                  # Show all environments
+npx wp-dev-sync env switch staging        # Activate staging
+npx wp-dev-sync env switch                # Interactive picker
+npx wp-dev-sync env list                  # Show all environments
 ```
 
 ```

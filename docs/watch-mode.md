@@ -1,12 +1,12 @@
 # Watch Mode
 
-`wp-dev-sync watch` is the core command for development. It monitors your local files and syncs changes to the remote server automatically.
+`npx wp-dev-sync watch` is the core command for development. It monitors your local files and syncs changes to the remote server automatically.
 
 ## How it works
 
 ```
 ┌──────────────────────────────────────────────────┐
-│  wp-dev-sync watch                               │
+│  npx wp-dev-sync watch                               │
 │                                                  │
 │  1. Compare local ↔ remote (dry-run diff)        │
 │  2. Smart reconciliation (per-category prompts)  │
@@ -127,7 +127,7 @@ If a native watcher isn't installed, WP Dev Sync automatically falls back to pol
   Watcher:       polling
 ```
 
-The `wp-dev-sync setup` command warns you if a native watcher is available but not installed.
+The `npx wp-dev-sync setup` command warns you if a native watcher is available but not installed.
 
 ## What gets watched
 
@@ -144,7 +144,7 @@ If you're using Vite for CSS/JS bundling, run both simultaneously:
 npm run dev
 
 # Terminal 2: WP Dev Sync watch
-wp-dev-sync watch
+npx wp-dev-sync watch
 ```
 
 Vite handles hot module replacement for styles, while WP Dev Sync pushes PHP template changes to the server.
@@ -169,7 +169,7 @@ The progress bar uses the known file count from the diff comparison, so it accur
 
 ### Large initial syncs
 
-The first time you run `wp-dev-sync watch`, the reconciliation step compares all files. If your theme is large, the dry-run comparison may take a moment. Subsequent syncs during watch mode are incremental and much faster.
+The first time you run `npx wp-dev-sync watch`, the reconciliation step compares all files. If your theme is large, the dry-run comparison may take a moment. Subsequent syncs during watch mode are incremental and much faster.
 
 ### Ctrl+C handling
 

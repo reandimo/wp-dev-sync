@@ -2,13 +2,13 @@
 
 ## npm (recommended)
 
-Install globally so `wp-dev-sync` is available everywhere:
+Install globally:
 
 ```bash
 npm install -g wp-dev-sync
 ```
 
-Or use it without installing via npx:
+Then use it with npx from any project directory:
 
 ```bash
 npx wp-dev-sync <command>
@@ -68,8 +68,8 @@ After installing, run the preflight check:
 
 ```bash
 cd /path/to/your/wordpress-project
-wp-dev-sync init     # Creates .env
-wp-dev-sync setup    # Checks everything
+npx wp-dev-sync init     # Creates .env
+npx wp-dev-sync setup    # Checks everything
 ```
 
 The setup command will show you what's installed, what's missing, and how to fix it.

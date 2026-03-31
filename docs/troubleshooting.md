@@ -6,7 +6,7 @@
 
 ```
 ┌─ Error ──────────────────────────────────────────┐
-│ .env file not found. Run: wp-dev-sync init           │
+│ .env file not found. Run: npx wp-dev-sync init           │
 └──────────────────────────────────────────────────┘
 ```
 
@@ -14,7 +14,7 @@
 
 **Fix:**
 ```bash
-wp-dev-sync init    # Creates .env from template
+npx wp-dev-sync init    # Creates .env from template
 ```
 
 Make sure you're in the right directory (your project root).
@@ -199,7 +199,7 @@ which cygpath
 ### Run the preflight check
 
 ```bash
-wp-dev-sync setup
+npx wp-dev-sync setup
 ```
 
 This command checks everything and provides actionable suggestions.

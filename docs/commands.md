@@ -1,11 +1,11 @@
 # Commands
 
-## wp-dev-sync init
+## npx wp-dev-sync init
 
 Creates a `.env` file in the current directory from the built-in template.
 
 ```bash
-wp-dev-sync init
+npx wp-dev-sync init
 ```
 
 If a `.env` file already exists, it warns you and exits without overwriting.
@@ -14,12 +14,12 @@ If a `.env` file already exists, it warns you and exits without overwriting.
 
 ---
 
-## wp-dev-sync setup
+## npx wp-dev-sync setup
 
 Runs a comprehensive preflight check to verify your environment is ready.
 
 ```bash
-wp-dev-sync setup
+npx wp-dev-sync setup
 ```
 
 **What it checks:**
@@ -33,12 +33,12 @@ Run this after configuring your `.env` to make sure everything works before sync
 
 ---
 
-## wp-dev-sync watch
+## npx wp-dev-sync watch
 
 Starts a file watcher that automatically syncs changes to the remote server.
 
 ```bash
-wp-dev-sync watch
+npx wp-dev-sync watch
 ```
 
 **What it does:**
@@ -67,12 +67,12 @@ The watcher selection is automatic based on your OS:
 
 ---
 
-## wp-dev-sync push
+## npx wp-dev-sync push
 
 One-time upload of all files from `LOCAL_PATH` to `REMOTE_PATH`.
 
 ```bash
-wp-dev-sync push
+npx wp-dev-sync push
 ```
 
 **Displays:**
@@ -88,12 +88,12 @@ wp-dev-sync push
 
 ---
 
-## wp-dev-sync pull
+## npx wp-dev-sync pull
 
 One-time download of all files from `REMOTE_PATH` to `LOCAL_PATH`.
 
 ```bash
-wp-dev-sync pull
+npx wp-dev-sync pull
 ```
 
 **Use cases:**
@@ -105,12 +105,12 @@ wp-dev-sync pull
 
 ---
 
-## wp-dev-sync diff
+## npx wp-dev-sync diff
 
 Compares local and remote files without syncing anything. Like `git status` for your server.
 
 ```bash
-wp-dev-sync diff
+npx wp-dev-sync diff
 ```
 
 **What it shows:**
@@ -134,12 +134,12 @@ Files are classified into three categories with color-coded output:
 
 ---
 
-## wp-dev-sync env
+## npx wp-dev-sync env
 
 Manages multiple server environments (staging, production, etc.) so you can switch between them instantly.
 
 ```bash
-wp-dev-sync env <subcommand>
+npx wp-dev-sync env <subcommand>
 ```
 
 **Subcommands:**
@@ -159,19 +159,19 @@ Environments are stored as `.env.<name>` files (e.g., `.env.staging`, `.env.prod
 
 ```bash
 # Create environments
-wp-dev-sync env create staging
-wp-dev-sync env create production
+npx wp-dev-sync env create staging
+npx wp-dev-sync env create production
 
 # Edit each file with server credentials
 nano .env.staging
 nano .env.production
 
 # Switch between them
-wp-dev-sync env switch staging        # by name
-wp-dev-sync env switch                # interactive arrow-key picker
+npx wp-dev-sync env switch staging        # by name
+npx wp-dev-sync env switch                # interactive arrow-key picker
 
 # Check which is active
-wp-dev-sync env current
+npx wp-dev-sync env current
 ```
 
 **Use cases:**
@@ -182,12 +182,12 @@ wp-dev-sync env current
 
 ---
 
-## wp-dev-sync tunnel
+## npx wp-dev-sync tunnel
 
 Opens a public tunnel to your remote site for previewing.
 
 ```bash
-wp-dev-sync tunnel
+npx wp-dev-sync tunnel
 ```
 
 Requires `TUNNEL_TOOL` and `TUNNEL_DOMAIN` in `.env`.
@@ -200,26 +200,26 @@ Requires `TUNNEL_TOOL` and `TUNNEL_DOMAIN` in `.env`.
 
 ---
 
-## wp-dev-sync help
+## npx wp-dev-sync help
 
 Shows all available commands and quick start guide.
 
 ```bash
-wp-dev-sync help
-wp-dev-sync --help
-wp-dev-sync -h
+npx wp-dev-sync help
+npx wp-dev-sync --help
+npx wp-dev-sync -h
 ```
 
 ---
 
-## wp-dev-sync version
+## npx wp-dev-sync version
 
 Shows the current version.
 
 ```bash
-wp-dev-sync version
-wp-dev-sync --version
-wp-dev-sync -v
+npx wp-dev-sync version
+npx wp-dev-sync --version
+npx wp-dev-sync -v
 ```
 
 ---

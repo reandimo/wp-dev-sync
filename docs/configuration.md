@@ -1,6 +1,6 @@
 # Configuration
 
-All configuration lives in a `.env` file in your project root. Run `wp-dev-sync init` to create one from the template.
+All configuration lives in a `.env` file in your project root. Run `npx wp-dev-sync init` to create one from the template.
 
 ## Full reference
 
@@ -107,7 +107,7 @@ SYNC_EXCLUDE=.git,node_modules,.DS_Store,*.log,.env,public/hot,public/fonts,vend
 
 ### .syncignore File
 
-For more granular control, create a `.syncignore` file in your project root. Run `wp-dev-sync init` to generate one from the built-in template.
+For more granular control, create a `.syncignore` file in your project root. Run `npx wp-dev-sync init` to generate one from the built-in template.
 
 ```bash
 # .syncignore — one pattern per line, # for comments
@@ -208,5 +208,5 @@ cp .env .env.production
 
 # Use one
 cp .env.staging .env
-wp-dev-sync push
+npx wp-dev-sync push
 ```

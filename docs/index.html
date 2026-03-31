@@ -653,7 +653,7 @@ footer {
  ╚══╝╚══╝ ╚═╝            ╚═════╝ ╚══════╝  ╚═══╝        ╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝</pre>
 
     <div class="hero-prompt">
-      <span class="prompt">$ </span><span class="cmd">wp-dev-sync watch</span><span class="cursor"></span>
+      <span class="prompt">$ </span><span class="cmd">npx wp-dev-sync watch</span><span class="cursor"></span>
     </div>
 
     <p class="hero-desc">
@@ -668,7 +668,7 @@ footer {
       <a href="https://www.npmjs.com/package/wp-dev-sync" class="btn btn-ghost">npm ↗</a>
     </div>
 
-    <p class="hero-version">npm install -g wp-dev-sync</p>
+    <p class="hero-version">npx wp-dev-sync &lt;command&gt;</p>
   </div>
 </section>
 
@@ -694,7 +694,7 @@ footer {
           <div class="problem-col problem-new">
             <h3>+ The wp-dev-sync Way</h3>
             <ul>
-              <li>Run wp-dev-sync watch</li>
+              <li>Run npx wp-dev-sync watch</li>
               <li>Edit files in your editor</li>
               <li>Files sync automatically</li>
               <li>SSH delta = only changed bytes</li>
@@ -714,7 +714,7 @@ footer {
 <!-- ═══ COMMANDS ═══ -->
 <section id="commands">
   <div class="container">
-    <div class="section-header">wp-dev-sync --help</div>
+    <div class="section-header">npx wp-dev-sync --help</div>
 
     <div class="window">
       <div class="window-bar">wp-dev-sync help</div>
@@ -734,10 +734,10 @@ footer {
         <hr class="commands-divider">
 
         <div class="commands-quick">
-          <div><span class="step-num">1</span> <span class="step-cmd">wp-dev-sync init</span> <span class="step-comment"># Create .env</span></div>
+          <div><span class="step-num">1</span> <span class="step-cmd">npx npx wp-dev-sync init</span> <span class="step-comment"># Create .env</span></div>
           <div><span class="step-num">2</span> <span class="step-cmd">nano .env</span> <span class="step-comment"># Set credentials</span></div>
-          <div><span class="step-num">3</span> <span class="step-cmd">wp-dev-sync setup</span> <span class="step-comment"># Verify</span></div>
-          <div><span class="step-num">4</span> <span class="step-cmd">wp-dev-sync watch</span> <span class="step-comment"># Sync!</span></div>
+          <div><span class="step-num">3</span> <span class="step-cmd">npx wp-dev-sync setup</span> <span class="step-comment"># Verify</span></div>
+          <div><span class="step-num">4</span> <span class="step-cmd">npx wp-dev-sync watch</span> <span class="step-comment"># Sync!</span></div>
         </div>
       </div>
     </div>
@@ -798,14 +798,14 @@ footer {
 <!-- ═══ LIVE SYNC DEMO ═══ -->
 <section id="demo">
   <div class="container">
-    <div class="section-header">wp-dev-sync watch --demo</div>
+    <div class="section-header">npx wp-dev-sync watch --demo</div>
 
     <div class="terminal" id="sync-demo">
       <div class="terminal-bar">
         <span class="terminal-dot r"></span>
         <span class="terminal-dot y"></span>
         <span class="terminal-dot g"></span>
-        <span class="terminal-title">wp-dev-sync watch — my-theme</span>
+        <span class="terminal-title">npx wp-dev-sync watch — my-theme</span>
       </div>
       <div class="terminal-body" id="sync-body" style="min-height:380px;">
         <!-- Injected by JS -->
@@ -887,7 +887,7 @@ footer {
     </div>
 
     <div style="margin-top:20px;font-size:14px;color:var(--gray);line-height:1.8;">
-      <div><span style="color:var(--green)">✔</span> Created automatically by <span style="color:var(--white)">wp-dev-sync init</span></div>
+      <div><span style="color:var(--green)">✔</span> Created automatically by <span style="color:var(--white)">npx wp-dev-sync init</span></div>
       <div><span style="color:var(--green)">✔</span> Works alongside <span style="color:var(--cyan)">SYNC_EXCLUDE</span> in .env — patterns are merged</div>
       <div><span style="color:var(--green)">✔</span> SSH uses rsync <span style="color:var(--cyan)">--exclude-from</span> natively (full glob support)</div>
       <div><span style="color:var(--green)">✔</span> FTP merges patterns into lftp exclude flags</div>
@@ -990,22 +990,19 @@ footer {
    ═══════════════════════════════════════════════════════════════ */
 
 const lines = [
-  { t: '$ npm install -g wp-dev-sync', c: 'prompt', delay: 0, type: true },
-  { t: 'added 1 package in 2s', c: 'ok', delay: 800 },
+  { t: '$ cd ~/projects/my-wordpress-site', c: 'prompt', delay: 0, type: true },
   { t: '', delay: 200 },
-  { t: '$ cd ~/projects/my-wordpress-site', c: 'prompt', delay: 300, type: true },
-  { t: '', delay: 200 },
-  { t: '$ wp-dev-sync init', c: 'prompt', delay: 300, type: true },
+  { t: '$ npx wp-dev-sync init', c: 'prompt', delay: 300, type: true },
   { t: '✔ Created .env from template', c: 'ok', delay: 400 },
   { t: '', delay: 200 },
   { t: '# Edit .env with your server credentials...', c: 'comment', delay: 600 },
   { t: '', delay: 200 },
-  { t: '$ wp-dev-sync setup', c: 'prompt', delay: 300, type: true },
+  { t: '$ npx wp-dev-sync setup', c: 'prompt', delay: 300, type: true },
   { t: '✔ rsync v3.4.1', c: 'ok', delay: 200 },
   { t: '✔ ssh', c: 'ok', delay: 200 },
   { t: '✔ SSH connection successful', c: 'ok', delay: 400 },
   { t: '', delay: 200 },
-  { t: '$ wp-dev-sync watch', c: 'prompt', delay: 300, type: true },
+  { t: '$ npx wp-dev-sync watch', c: 'prompt', delay: 300, type: true },
   { t: '╭── info ─────────────────────────────────────────╮', c: 'info', delay: 400 },
   { t: '│  Files that differ between local and remote:    │', c: 'info', delay: 100 },
   { t: '│    ● functions.php                              │', c: 'info', delay: 100 },
